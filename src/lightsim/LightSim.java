@@ -13,6 +13,7 @@
 package lightsim;
 
 import java.awt.event.*;
+import java.util.logging.*;
 import java.util.prefs.Preferences;
 
 //======================================================================
@@ -27,6 +28,8 @@ public class LightSim implements ActionListener
     private LightSimWindow  my_window;
     private LightSimExec    my_sim_exec;
     private LightArray      my_light_arrays;
+    private static final Logger log =
+      Logger.getLogger(LightSim.class.getPackage().getName());
 
   // ----- main() ----------------------------------------------------
   //
@@ -35,6 +38,7 @@ public class LightSim implements ActionListener
    */
     public static void main (String[] args)
         {
+        log.info("LightSim main");
         prefs = Preferences.userRoot();
         light_sim = new LightSim();
         light_sim.init();
