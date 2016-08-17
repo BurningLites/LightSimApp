@@ -1,0 +1,14 @@
+# Mac OS X specific
+#
+.DS_Store
+
+# Java
+#
+.class
+.jar
+
+# NetBeans
+#
+build
+dist
+
