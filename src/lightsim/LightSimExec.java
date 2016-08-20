@@ -147,15 +147,7 @@ public class LightSimExec implements ActionListener, Runnable
                 break;
 
             case "reset":
-                running = false;
-                paused = false;
-                my_light_array.resetLights();
-                my_light_sim.update();
-                my_toolbar.setToolbarState ("reset");
-                my_toolbar.enableControls (true);
-                my_toolbar.setStepField (-1);
-                my_toolbar.setTimeField (-1);
-                sim_thread = null;
+                reset();
                 break;
 
             case "run":
@@ -167,6 +159,30 @@ public class LightSimExec implements ActionListener, Runnable
                 my_toolbar.setToolbarState ("pause");
                 break;
             }
+        }
+    
+    public void reset ()
+        {
+         running = false;
+         paused = false;
+         my_light_array.resetLights();
+         my_light_sim.update();
+         my_toolbar.setToolbarState ("reset");
+         my_toolbar.enableControls (true);
+         my_toolbar.setStepField (-1);
+         my_toolbar.setTimeField (-1);
+         sim_thread = null;
+        }
+    
+    public void resetAndRun ()
+        {
+        paused = true;
+        if (sim_thread != null) {
+            try { sim_thread.join(); }
+            catch (InterruptedException ie) { }
+        }
+        reset();
+        runLights (true);
         }
     
   // ========== Runnable support =====================================
