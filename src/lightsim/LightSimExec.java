@@ -14,10 +14,8 @@ package lightsim;
 
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.logging.*;
 
 import lightsim.LightArray.Light;
-
 
 //======================================================================
 // class LightSimExec
@@ -36,8 +34,6 @@ public class LightSimExec implements ActionListener, Runnable
     Thread  sim_thread;
     boolean paused, running;
     int step, time, dt;
-    private static final Logger log =
-      Logger.getLogger(LightSimExec.class.getPackage().getName());
 
   // ----- constructor ------------------------------------------------
   //
@@ -151,7 +147,15 @@ public class LightSimExec implements ActionListener, Runnable
                 break;
 
             case "reset":
-                reset();
+                running = false;
+                paused = false;
+                my_light_array.resetLights();
+                my_light_sim.update();
+                my_toolbar.setToolbarState ("reset");
+                my_toolbar.enableControls (true);
+                my_toolbar.setStepField (-1);
+                my_toolbar.setTimeField (-1);
+                sim_thread = null;
                 break;
 
             case "run":
@@ -164,25 +168,6 @@ public class LightSimExec implements ActionListener, Runnable
                 break;
             }
         }
-
-    public void reset ()
-        {
-        running = false;
-        paused = false;
-        my_light_array.resetLights();
-        my_light_sim.update();
-        my_toolbar.setToolbarState ("reset");
-        my_toolbar.enableControls (true);
-        my_toolbar.setStepField (-1);
-        my_toolbar.setTimeField (-1);
-        sim_thread = null;
-        }
-
-    public void restart ()
-        {
-        reset ();
-        runLights (true);
-        }
     
   // ========== Runnable support =====================================
   //
@@ -190,7 +175,6 @@ public class LightSimExec implements ActionListener, Runnable
         {
         while (running && !paused)
             {
-            log.info("step " + step + " time " + time);
             my_light_controller.step (time, step);
             my_light_controller.setLights (time, step);
             my_light_sim.update();

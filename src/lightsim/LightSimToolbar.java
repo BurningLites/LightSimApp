@@ -14,7 +14,6 @@ package lightsim;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.logging.*;
 import javax.swing.*;
 
 //======================================================================
@@ -24,8 +23,6 @@ import javax.swing.*;
 public class LightSimToolbar extends JPanel
                     implements ActionListener, ItemListener
     {
-    private static final Logger log =
-      Logger.getLogger(LightSimToolbar.class.getPackage().getName());
     private static ImageIcon  PAUSE_ICON, RESET_ICON, RUN_ICON, STEP_ICON;
     static
         {
@@ -43,7 +40,7 @@ public class LightSimToolbar extends JPanel
     private JButton     run_button;
     private JButton     step_button;
     
-    private JTextField  step_txtfld, time_txtfld, param_txtfld;
+    private JTextField  step_txtfld, time_txtfld;
 
     private JComboBox<String>   speed_cbx;
     private JComboBox<LightController>  controller_cbx;
@@ -93,13 +90,11 @@ public class LightSimToolbar extends JPanel
       //
         run_toolbar.addSeparator();
         speed_cbx = new JComboBox (SPEED_OPTIONS);
-        speed_cbx.setSelectedItem ("10");
         speed_cbx.addItemListener (this);
         run_toolbar.add (speed_cbx);
         run_toolbar.add (new JLabel("Hz  "));
 
         controller_cbx = new JComboBox();
-        controller_cbx.addItemListener (this);
         run_toolbar.add (controller_cbx);
 
       // Add another separator and text fields for reporting
@@ -113,10 +108,6 @@ public class LightSimToolbar extends JPanel
         run_toolbar.add (new JLabel(" step:"));
         step_txtfld = new JTextField ("  -  ", 5);
         run_toolbar.add (step_txtfld);
-
-        run_toolbar.add (new JLabel(" param:"));
-        param_txtfld = new JTextField ("  -  ", 5);
-        run_toolbar.add (param_txtfld);
 
         add (run_toolbar);
         }
@@ -243,7 +234,6 @@ public class LightSimToolbar extends JPanel
     public void actionPerformed (ActionEvent event)
         {
         String  command = event.getActionCommand();
-        log.info("toolbar event: " + event.getID() + " " + command + " " + event.getSource());
         setToolbarState (command);
         my_exec.actionPerformed (
                 new ActionEvent (event.getSource(),
@@ -255,15 +245,10 @@ public class LightSimToolbar extends JPanel
     public void itemStateChanged (ItemEvent event)
         {
         Object src = event.getSource();
-        log.info("toolbar item state: " + event.getID() + " " + event.paramString() + " " + event.getSource());
         
         if (src == speed_cbx)
             {
             my_exec.setSpeed (getSpeed());
-            }
-        if (src == controller_cbx && event.getStateChange() == ItemEvent.SELECTED)
-            {
-            my_exec.restart();
             }
         }
     }
