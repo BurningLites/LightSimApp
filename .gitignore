@@ -12,3 +12,6 @@
 build
 dist
 
+# vim
+#
+*.sw*
