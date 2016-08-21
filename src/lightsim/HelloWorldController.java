@@ -65,8 +65,7 @@ public class HelloWorldController extends LightController
 
   // ----- step() -----------------------------------------------------
   //
-    public boolean step (int clock, int step)
-        {
+    public boolean step (int clock, int step) {
         if (t_next < 0)
             t_next = clock + 1000;
 

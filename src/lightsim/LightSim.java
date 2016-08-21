@@ -13,6 +13,7 @@
 package lightsim;
 
 import java.awt.event.*;
+import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 
 //======================================================================
@@ -21,6 +22,8 @@ import java.util.prefs.Preferences;
 
 public class LightSim implements ActionListener
     {
+    static final boolean ENABLE_GUI = true;
+
     static LightSim     light_sim;
     static public Preferences   prefs;
     
@@ -48,19 +51,29 @@ public class LightSim implements ActionListener
 
   // ----- init() -----------------------------------------------------
   //
-    public void init()
-        {
+    public void init() {
         my_light_arrays = new LightArray();
-        my_sim_exec = new LightSimExec (this, my_light_arrays);
-        my_window = new LightSimWindow (this, my_light_arrays);
+        if (ENABLE_GUI) {
+            my_sim_exec = new LightSimExec (this, my_light_arrays);
+            my_window = new LightSimWindow (this, my_light_arrays);
 
-        my_sim_exec.addController (new HelloWorldController());
-        my_sim_exec.addController (new GameOfLifeController());
-        my_sim_exec.addController (new DiamondController());
-        my_sim_exec.addController (new SpiralController());
-        my_sim_exec.addController (new PulseController());
-        my_sim_exec.addController (new ColorCubeController());
+            my_sim_exec.addController (new HelloWorldController());
+            my_sim_exec.addController (new GameOfLifeController());
+            my_sim_exec.addController (new DiamondController());
+            my_sim_exec.addController (new SpiralController());
+            my_sim_exec.addController (new PulseController());
+            my_sim_exec.addController (new ColorCubeController());
+        } else {
+            // Not really *just* GUI disabled; really a totally different mode
+            // of execution based on a ScheduleThreadPoolExecutor providing a
+            // run loop.
+            ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1);
+
+            LeanExec leanExec = new LeanExec(exec, my_light_arrays);
+            leanExec.setController(new HelloWorldController());
+            leanExec.start();  // Starts running LeanExec on the executor.
         }
+    }
 
   // ----- access/convenience methods ---------------------------------
   //
