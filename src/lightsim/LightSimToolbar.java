@@ -23,6 +23,54 @@ import javax.swing.*;
 public class LightSimToolbar extends JPanel
                     implements ActionListener, ItemListener
     {
+    enum FrameRate
+        {
+        FR_1    (1, "one frame/sec"),   // 1000 msec
+        FR_10   (10, "10 frames/sec"),  // 100 msec
+        FR_15   (15, "15 frames/sec"),  // 67 msec
+        FR_24   (24, "24 frames/sec"),  // 42 msec
+        FR_30   (30, "30 frames/sec"),  // 33 msec
+        FR_60   (60, "60 frames/sec");  // 17 msec
+
+        int frame_rate;
+        String name;
+
+        FrameRate (int n_frames, String name)
+            {
+            this.frame_rate = n_frames;
+            this.name = name;
+            }
+
+        public int getFrameRate()   { return frame_rate; }
+        public String toString()    { return name; }
+        }
+
+    enum Speed
+        {
+        SPEED_1_10 (0.10, "1/10"),
+        SPEED_1_5  (0.20, "1/5"),
+        SPEED_1_2  (0.5, "1/2"),
+        SPEED_1    (1.0, "real time"),
+        SPEED_2    (2.0, "2x"),
+        SPEED_5    (5.0, "5x"),
+        SPEED_10   (10.0, "10x"),
+        SPEED_20   (20.0, "20x"),
+        SPEED_50   (50.0, "50x")
+        ;
+
+        double speed_factor;    // Multiply frame rate by this.
+        String name;
+
+        Speed (double factor, String name)
+            {
+            speed_factor = factor;
+            this.name = name;
+            }
+
+        public double getSpeedFactor()  { return speed_factor; }
+        public String toString()        { return name; }
+        }
+
     private static ImageIcon  PAUSE_ICON, RESET_ICON, RUN_ICON, STEP_ICON;
     static
         {
@@ -40,14 +88,14 @@ public class LightSimToolbar extends JPanel
     private JButton     run_button;
     private JButton     step_button;
     
-    private JTextField  step_txtfld, time_txtfld;
-
-    private JComboBox<String>   speed_cbx;
     private JComboBox<LightController>  controller_cbx;
 
+    private JComboBox<String>  frame_rate_cbx;
+    private JComboBox<String>  speed_cbx;
+    private JTextField  step_txtfld, time_txtfld;
+    private JCheckBox   animation_chkbx;
+    
     LightSimExec    my_exec;
-    private static final String 
-        SPEED_OPTIONS[] = { "1", "2", "5", "10", "20", "50", "100" };
 
   // ----- constructor ------------------------------------------------
   //
@@ -63,7 +111,12 @@ public class LightSimToolbar extends JPanel
     {
         setLayout (new FlowLayout(FlowLayout.LEFT));
 
-      // ----------------------------------------------------
+      // Create a toolbar to hold everything.
+      //
+        JToolBar run_toolbar = new JToolBar ("Run Toolbar");
+        run_toolbar.setFloatable (false);
+        run_toolbar.setBorderPainted (true);
+
       // Create the run control buttons which include
       // a reset button, a combined run/pause button, and a
       // step button.  All of these appear within the same
@@ -77,37 +130,56 @@ public class LightSimToolbar extends JPanel
         step_button = create_button (STEP_ICON, "step",
                                      "Single step lights");
 
-        JToolBar run_toolbar = new JToolBar ("Run Toolbar");
-        run_toolbar.setFloatable (false);
-        run_toolbar.setBorderPainted (true);
-
         run_toolbar.add (reset_button);
         run_toolbar.add (run_button);
         run_toolbar.add (step_button);
 
-      // Add a separator and the popdown menus for controlling
-      // speed and selecting a light controller.
+      // Create the controller selection drop down menu.  This gets
+      // populated with options as controller instances are added to
+      // the LightSimExec.
       //
         run_toolbar.addSeparator();
-        speed_cbx = new JComboBox (SPEED_OPTIONS);
-        speed_cbx.addItemListener (this);
-        run_toolbar.add (speed_cbx);
-        run_toolbar.add (new JLabel("Hz  "));
-
+        
         controller_cbx = new JComboBox();
         run_toolbar.add (controller_cbx);
-
-      // Add another separator and text fields for reporting
-      // time and step.
-      //
-        run_toolbar.addSeparator();
-        run_toolbar.add (new JLabel("time:"));
-        time_txtfld = new JTextField ("  -  ", 7);
-        run_toolbar.add (time_txtfld);
 
         run_toolbar.add (new JLabel(" step:"));
         step_txtfld = new JTextField ("  -  ", 5);
         run_toolbar.add (step_txtfld);
+
+      // Add a separator and the popdown menus for controlling
+      // the frame rate, simulation speed and light controller
+      // selection.  
+      //
+        run_toolbar.addSeparator();
+
+        run_toolbar.add (new JLabel("Frame rate:"));
+        frame_rate_cbx = new JComboBox (FrameRate.values());
+        frame_rate_cbx.setSelectedItem (FrameRate.FR_30);
+        frame_rate_cbx.addItemListener (this);
+        run_toolbar.add (frame_rate_cbx);
+
+        run_toolbar.add (new JLabel("Speed:"));
+        speed_cbx = new JComboBox (Speed.values());
+        speed_cbx.setSelectedItem (Speed.SPEED_1);
+        speed_cbx.addItemListener (this);
+        run_toolbar.add (speed_cbx);
+        
+      // Add another separator and text fields for reporting
+      // time and step.
+      //
+        run_toolbar.add (new JLabel("time:"));
+        time_txtfld = new JTextField ("  -  ", 7);
+        run_toolbar.add (time_txtfld);
+
+      // Add a button to control the use of animation.
+      //
+        run_toolbar.addSeparator();
+        animation_chkbx = new JCheckBox ("Animation");
+        animation_chkbx.setActionCommand ("animate");
+        animation_chkbx.setSelected (true);
+        animation_chkbx.addActionListener (my_exec);
+        run_toolbar.add (animation_chkbx);
 
         add (run_toolbar);
         }
@@ -145,7 +217,16 @@ public class LightSimToolbar extends JPanel
         controller_cbx.setEnabled (value && have_controllers);
         }
 
-  // ----- getSelectedController() -----------------------------------
+  // ----- getFrameRate() ---------------------------------------------
+  //
+    public int getFrameRate()
+        {
+        FrameRate selected_rate
+                    = (FrameRate) frame_rate_cbx.getSelectedItem();
+        return selected_rate.getFrameRate();
+        }
+    
+  // ----- getSelectedController() ------------------------------------
   //
     public LightController getSelectedController()
         {
@@ -158,12 +239,12 @@ public class LightSimToolbar extends JPanel
   //
     public double getSpeed()
         {
-        String string_hz = (String) speed_cbx.getSelectedItem();
-        double hertz = Double.valueOf (string_hz);
-        return hertz;
+        double speed_factor
+            = ((Speed) speed_cbx.getSelectedItem()).getSpeedFactor();
+        return speed_factor;
         }
 
-  // ----- setTimeField() ---------------------------------------------
+  // ----- setStepField() ---------------------------------------------
   //
     public void setStepField (int step_count)
         {
@@ -246,11 +327,18 @@ public class LightSimToolbar extends JPanel
         {
         Object src = event.getSource();
         
-        if (src == speed_cbx)
+        if (    src == speed_cbx
+             && event.getStateChange() == ItemEvent.SELECTED);
             {
             my_exec.setSpeed (getSpeed());
             }
+        if (    src == frame_rate_cbx
+             && event.getStateChange() == ItemEvent.SELECTED)
+            {
+            my_exec.setFrameRate (getFrameRate());
+            }
         }
+    
     }
 
 //*************************************************************************

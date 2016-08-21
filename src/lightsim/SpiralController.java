@@ -144,8 +144,8 @@ public class SpiralController extends LightController
     Light[][][] left_lights, right_lights;
     int iy, iyp1, nx, ny, nz;
 
-    public String name()    { return "Spiral"; }
-    
+  // ----- init() -----------------------------------------------------
+  //
     public void init (LightArray light_array)
         {
         super.init (light_array);
@@ -160,14 +160,20 @@ public class SpiralController extends LightController
               else
                 right_lights[l.iy][l.ix-12][l.iz] = l;
             }
-        my_light_array.resetLights ();
+        my_light_array.reset ();
         iy = 0;
         iyp1 = 1;
         }
 
-    public boolean step (int time, int step)
+  // ----- name() -----------------------------------------------------
+  //
+    public String name()    { return "Spiral"; }
+    
+  // ----- step() -----------------------------------------------------
+  //
+    public boolean step (int clock)
         {
-        int i = step % 16;
+        int i = my_step % 16;
         if (0 <= i && i < 12)
             {
             set_y_layer (left_lights[iy], LOOP[i]);
@@ -189,9 +195,13 @@ public class SpiralController extends LightController
             iy = (iy + 1) % ny;
             iyp1 = (iyp1 + 1) % ny;
             }
+
+        increment_step();
         return true;
         }
     
+  // ----- mirror_y_layer() ---------------------------------------------
+  //
     private void mirror_y_layer (Light layer[][], byte pattern[])
         {
         for (int ix=0; ix<5; ix++)
@@ -216,6 +226,8 @@ public class SpiralController extends LightController
             }
         }
 
+  // ----- set_y_layer() ---------------------------------------------
+  //
     private void set_y_layer (Light layer[][], byte pattern[])
         {
         for (int ix=0; ix<5; ix++)
@@ -238,11 +250,6 @@ public class SpiralController extends LightController
                 mask = mask >>> 1;
                 }
             }
-        }
-
-    public void setLights (int time, int step)
-        {
-
         }
     }
 

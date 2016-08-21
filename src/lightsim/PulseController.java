@@ -28,37 +28,43 @@ public class PulseController extends LightController
     private static final Color OFF_COLOR = new Color (155,155,155);
     private int i0;
     
+  // ----- constructor -------------------------------------------------
+  //
     public PulseController()
         {
         on_wave = new boolean[WAVE_LENGTH+4];
         blue_wave = new Color[WAVE_LENGTH+4];
         }
     
+  // ----- init() -----------------------------------------------------
+  //
     public void init (LightArray light_array)
         {
         super.init (light_array);
         i0 = -1;
-        step (0,0);
+        step (0);
         }
     
+  // ----- name() -----------------------------------------------------
+  //
     public String name()
         {
         return "Pulsed Wave";
         }
 
+  // ----- step() -----------------------------------------------------
+  //
   // The total peak-to-peak length of the wave is longer than the
   // height of the light array, and the curve is more of a pulse
   // than a sinusoid.
   //
-    public boolean step (int time, int step)
+    public boolean step (int time)
         {
         i0 = ++i0 % (WAVE_LENGTH+4);
-// System.out.println ("i0=" + i0);
         for (int i=0; i<=WAVE_LENGTH; i++)
             {
             double cos_idw = (Math.cos ((i+i0)*DW) + 1.0) / 2.0;
             double wave = Math.pow (cos_idw, 4.0);
-// System.out.println (String.format("%f %f %f", DW*(i+i0), cos_idw, wave));
             if (wave > 0.5)
                 {
                 on_wave[i] = true;
@@ -73,7 +79,9 @@ public class PulseController extends LightController
         return true;
         }
     
-    public void setLights (int time, int step)
+  // ----- setLights() -------------------------------------------------
+  //
+    public void setLights (int time)
         {
         for (LightArray.Light light : my_light_array.getLights())
             {

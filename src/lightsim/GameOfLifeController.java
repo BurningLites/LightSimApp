@@ -39,6 +39,9 @@ public class GameOfLifeController extends LightController
         0b01110
         };
 
+    int t_next;
+    static final int MY_DT = 250;
+
   // ----- init() -----------------------------------------------------
   //
     public void init (LightArray light_array)
@@ -65,25 +68,32 @@ public class GameOfLifeController extends LightController
         left_data = new byte[2][nx][ny];
         right_data = new byte[2][nx][ny];
 
-        setLights (0, 0);
+        setLights (0);
+        t_next = 0;
         }
     
   // ----- step() -----------------------------------------------------
   //
-    public boolean step (int time, int step)
+    @Override
+    public boolean step (int clock)
         {
-        if (step > 0)
+        if (clock >= t_next)
             {
-            int n = step % 2;
-            int nm1 = (step-1) % 2;
-            
-            left_wait = insert_spaceship (left_data[nm1], left_wait);
-            right_wait = insert_spaceship (right_data[nm1],right_wait);
-            
-            calc_next_gen (left_data[nm1], left_data[n]);
-            calc_next_gen (right_data[nm1], right_data[n]);
+            if (my_step > 0)
+                {
+                int n = my_step % 2;
+                int nm1 = (my_step-1) % 2;
+
+                left_wait = insert_spaceship (left_data[nm1], left_wait);
+                right_wait = insert_spaceship (right_data[nm1],right_wait);
+
+                calc_next_gen (left_data[nm1], left_data[n]);
+                calc_next_gen (right_data[nm1], right_data[n]);
+                }
+
+            increment_step();
+            t_next = clock + MY_DT;
             }
-        
         return true;
         }
 
@@ -194,9 +204,9 @@ public class GameOfLifeController extends LightController
   // ----- setLights() ------------------------------------------------
   //
     @Override
-    public void setLights (int time, int step)
+    public void setLights (int time)
         {
-        int data_idx = step % 2;
+        int data_idx = my_step % 2;
         set_lights (left_data[data_idx], right_data[data_idx]);
         }
 

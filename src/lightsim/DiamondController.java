@@ -58,8 +58,11 @@ public class DiamondController extends LightController
     Light[][][] left_lights, right_lights;
     int iy, iyp1, nx, ny, nz;
 
-    public String name()    { return "Diamonds"; }
-    
+    int t_next;
+    static final int MY_DT = 33;
+
+  // ----- init() -----------------------------------------------------
+  //
     public void init (LightArray light_array)
         {
         super.init (light_array);
@@ -75,23 +78,19 @@ public class DiamondController extends LightController
                 right_lights[l.iy][l.ix-12][l.iz] = l;
             }
 
-        my_light_array.resetLights();
+        my_light_array.reset();
 
         Color color = Color.GREEN;
         set_y_layer (left_lights[2], DIAMOND[2], color);
-//      color = color.darker();
         set_y_layer (left_lights[1], DIAMOND[1], color);
         set_y_layer (left_lights[3], DIAMOND[3], color);
-//      color = color.darker();
         set_y_layer (left_lights[0], DIAMOND[0], color);
         set_y_layer (left_lights[4], DIAMOND[4], color);
 
         color = Color.MAGENTA;
         set_y_layer (right_lights[2], DIAMOND[2], color);
-//      color = color.darker();
         set_y_layer (right_lights[1], DIAMOND[1], color);
         set_y_layer (right_lights[3], DIAMOND[3], color);
-//      color = color.darker();
         set_y_layer (right_lights[0], DIAMOND[0], color);
         set_y_layer (right_lights[4], DIAMOND[4], color);
 
@@ -99,26 +98,33 @@ public class DiamondController extends LightController
         iyp1 = 1;
         }
 
-    public boolean step (int time, int step)
+  // ----- name() -----------------------------------------------------
+  //
+    public String name()    { return "Diamonds"; }
+
+  // ----- step() -----------------------------------------------------
+  //
+    public boolean step (int clock)
         {
-        int next_y = (step + 5) % ny;
-        for (int i=0; i<5; i++)
+        if (clock >= t_next)
             {
-            int ym1 = next_y - 1;
-            if (ym1 < 0) ym1 += ny;
-            copy_layer (left_lights[ym1], left_lights[next_y]);
-            copy_layer (right_lights[ym1], right_lights[next_y]);
-            --next_y;
-            if (next_y < 0)  next_y += ny;
+            int next_y = (my_step + 5) % ny;
+            for (int i=0; i<5; i++)
+                {
+                int ym1 = next_y - 1;
+                if (ym1 < 0) ym1 += ny;
+                copy_layer (left_lights[ym1], left_lights[next_y]);
+                copy_layer (right_lights[ym1], right_lights[next_y]);
+                --next_y;
+                if (next_y < 0)  next_y += ny;
+                }
+            clear_layer (left_lights[next_y]);
+            clear_layer (right_lights[next_y]);
+
+            increment_step();
+            t_next = clock + MY_DT;
             }
-        clear_layer (left_lights[next_y]);
-        clear_layer (right_lights[next_y]);
-
         return true;
-        }
-
-    public void setLights (int time, int step)
-        {
         }
     }
 

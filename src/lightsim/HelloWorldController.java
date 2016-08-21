@@ -18,69 +18,84 @@ import lightsim.LightArray.Light;
 //======================================================================
 // class HelloWorldController
 //======================================================================
+//
+// This controller displays a series of characters by marching them
+// through light arrays along the x-axis.
+// To improve the ability of an observe to discern the individual
+// characters, the controller inserts a layer of "off" lights between
+// every character and draws each character in a different color.
+//
 
 public class HelloWorldController extends LightController
     {
     private static final String HELLO_WORLD = "Hello World ! ";
     private static final Color[]
         RAINBOW = { Color.RED, Color.ORANGE, Color.YELLOW,
-                    Color.GREEN, new Color(55,55,255), Color.MAGENTA};
+                    Color.GREEN, new Color(101,101,255), Color.MAGENTA};
 
     Light[][][]  lights;
     int nx, nxm1, ny, nz;
-    int t_next = -1;
-    int ic, color_idx = -1, my_step;
+    LSFont my_font;
 
-    public String name()    { return "Hello World"; }
+    int ic, color_idx;
+    int t_next;
+    static final int MY_DT = 500;
 
   // ----- init() -----------------------------------------------------
   //
-  // Organize light into arrays that will facilitate the manipulation
-  // of the light values.
+  // Organize the lights into arrays that facilitate the manipulation
+  // of the light values for this controller.
   //
     public void init (LightArray light_array)
         {
         super.init (light_array);
 
-        nx = 10; ny = 10; nz = 5;
-        nxm1 = nx - 1;
-        lights = new Light[10][5][10];
-        for (Light l : my_light_array.getLights())
+        if (lights == null)
             {
-            if (l.ix < 5)
+            nx = 10; ny = 10; nz = 5;
+            nxm1 = nx - 1;
+
+            lights = new Light[10][5][10];
+            for (Light l : my_light_array.getLights())
                 {
-                lights[l.ix][l.iz][l.iy] = l;
-                }
-              else
-                {
-                lights[5+(l.ix-12)][l.iz][l.iy] = l;
+                if (l.ix < 5)
+                    {
+                    lights[l.ix][l.iz][l.iy] = l;
+                    }
+                  else
+                    {
+                    lights[5+(l.ix-12)][l.iz][l.iy] = l;
+                    }
                 }
             }
+
+        my_font = new LSFont_5x7();
 
         ic = 0;
         color_idx = -1;
         t_next = 0;
-        my_step = 0;
         }
+
+  // ----- name() -----------------------------------------------------
+  //
+    public String name()    { return "Hello World"; }
 
   // ----- step() -----------------------------------------------------
   //
-    public boolean step (int clock, int step)
+    @Override
+    public boolean step (int clock)
         {
-        if (t_next < 0)
-            t_next = clock + 1000;
-
         if (clock >= t_next)
             {
             for (int ix=0; ix<nxm1; ix++)
                 copy_layer (lights[ix+1], lights[ix]);
 
-            if ( (my_step++ % 2) == 0)
+            if ( (my_step % 2) == 0)
                 {
                 char c = HELLO_WORLD.charAt(ic);
                 if (c != ' ')
                     color_idx = ++color_idx % RAINBOW.length;
-                set_5x7_char (c, lights[nxm1], 0,1,
+                my_font.fillWithChar (c, lights[nxm1], 0,1,
                                 Color.BLACK, RAINBOW[color_idx]);
                 ic = ++ic % HELLO_WORLD.length();
                 }
@@ -88,7 +103,8 @@ public class HelloWorldController extends LightController
                 {
                 clear_layer (lights[nxm1]);
                 }
-            t_next = clock + 1000;
+            increment_step();
+            t_next = clock + MY_DT;
             }
         return true;
         }
