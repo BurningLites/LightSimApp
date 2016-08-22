@@ -53,7 +53,17 @@ public class LightArray
             this.color = light.color;
             }
 
-        public void setColor (Color value)  { color = value; }
+        public boolean isOn() {
+            return on;
+        }
+        
+        public void setColor (Color value)  {
+            color = value;
+        }
+        
+        public Color getColor () {
+            return color;
+        }
         public void setIndices (int _ix, int _iy, int _iz)
             {
             ix = _ix;

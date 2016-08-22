@@ -7,6 +7,7 @@ public class LeanExec implements Runnable {
 
     ScheduledExecutorService executor;
     LightArray lights;
+    SpiWriter spiWriter;
     
     // Speed multiplier. 1 is real time, 0.5 is half time, etc.
     double speed = 1;
@@ -26,6 +27,10 @@ public class LeanExec implements Runnable {
     public LeanExec(ScheduledExecutorService executor, LightArray lights) {
         this.executor = executor;
         this.lights = lights;
+        spiWriter = SpiWriter.getWriter();
+        if (spiWriter == null) {
+            Console.log("Couldn't get writer. :(");
+        }
     }
     
     public void start() {
@@ -61,7 +66,9 @@ public class LeanExec implements Runnable {
         controller.step ((int)(currentAbstractTimeSeconds * 1000));
         step++;
         
-        // TODO(write lights to serial!!
+        if (spiWriter != null) {
+            spiWriter.writeLights(lights);
+        }
     }
     
     private double wallclockTimeSeconds() {
