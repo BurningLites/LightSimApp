@@ -161,6 +161,7 @@ public class SpiralController extends LightController
                 right_lights[l.iy][l.ix-12][l.iz] = l;
             }
         my_light_array.reset ();
+
         iy = 0;
         iyp1 = 1;
         }

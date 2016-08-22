@@ -96,6 +96,7 @@ public class DiamondController extends LightController
 
         iy = 0;
         iyp1 = 1;
+        t_next = 0;
         }
 
   // ----- name() -----------------------------------------------------
