@@ -1,6 +1,7 @@
 # Mac OS X specific
 #
 .DS_Store
+*_saved
 
 # Java
 #

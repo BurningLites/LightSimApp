@@ -1,7 +1,10 @@
 package lightsim;
 
-import com.pi4j.wiringpi.Spi;
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 public class SpiWriter {
@@ -9,18 +12,31 @@ public class SpiWriter {
     static final boolean ENABLE_SLOW_MODE = false; 
     static final int SPI_RATE = (int)(ENABLE_SLOW_MODE ? 500e3 : 2000e3);
     
+    // Dynamically-loaded Spi.wiringPiSPIDataRW method.
+    Method dataRwMethod;
+    
     public static SpiWriter getWriter() {
+        Method dataRwMethod;
         try {
-            int fd = Spi.wiringPiSPISetupMode(0, SPI_RATE, 0);
-            if (fd <= -1) {
-                Console.log(" ==>> SPI SETUP FAILED");
-                return null;
-            }
-        } catch (UnsatisfiedLinkError e) {
+            URL classLoaderUrls[] = new URL[]{new URL("file:///opt/pi4j/lib/pi4j-core.jar")};
+            
+            URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls, SpiWriter.class.getClassLoader());
+            Class spiClass = urlClassLoader.loadClass("com.pi4j.wiringpi.Spi");
+            Method setupModeMethod = spiClass.getMethod("wiringPiSPISetupMode", int.class, int.class, int.class);
+            dataRwMethod = spiClass.getMethod("wiringPiSPIDataRW", int.class, byte[].class, int.class);
+            
+            setupModeMethod.invoke(null, 0, SPI_RATE, 0);
+            
+        } catch (Exception e) {
+            Console.log("Error initializing SpiWriter: " + e);
             return null;
         }
-        return new SpiWriter();
+        return new SpiWriter(dataRwMethod);
     }
+    
+    private SpiWriter(Method dataRwMethod) {
+        this.dataRwMethod = dataRwMethod;
+    };
     
     private SpiWriter() {};
     
@@ -47,10 +63,14 @@ public class SpiWriter {
 
         // Send magic start sequence.
         byte start_byte[] = {0x01, 0x01, 0x01, 0x01};
-        Spi.wiringPiSPIDataRW(0, start_byte, start_byte.length);
-        
-        // System.out.println("Sending " + color_data.length + " bytes of color data.");
-        Spi.wiringPiSPIDataRW(0, color_data, color_data.length);
+        try {
+            dataRwMethod.invoke(null, 0, start_byte, start_byte.length);
+
+            // System.out.println("Sending " + color_data.length + " bytes of color data.");
+            dataRwMethod.invoke(null, 0, color_data, color_data.length);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Console.log("Error invoking SPIDataRW: " + e);
+        }
     }
 
     // Convert 0x01 to 0x00; otherwise return the original value. 0x01 is
