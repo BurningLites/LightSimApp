@@ -22,14 +22,13 @@ import java.util.prefs.Preferences;
 
 public class LightSim implements ActionListener
     {
-    static final boolean ENABLE_GUI = true;
-
     static LightSim     light_sim;
     static public Preferences   prefs;
     
     private LightSimWindow  my_window;
     private LightSimExec    my_sim_exec;
     private LightArray      my_light_arrays;
+    private boolean enable_gui;
 
   // ----- main() ----------------------------------------------------
   //
@@ -38,22 +37,27 @@ public class LightSim implements ActionListener
    */
     public static void main (String[] args)
         {
+        boolean enable_gui = true;
+        if (args.length > 0 && "--no-gui".equals(args[0])) {
+            enable_gui = false;
+        }
         prefs = Preferences.userRoot();
-        light_sim = new LightSim();
+        light_sim = new LightSim(enable_gui);
         light_sim.init();
         }
 
   // ----- constructor -----------------------------------------------
   //
-    public LightSim()
+    public LightSim(boolean enable_gui)
         {
+        this.enable_gui = enable_gui;
         }
 
   // ----- init() -----------------------------------------------------
   //
     public void init() {
         my_light_arrays = new LightArray();
-        if (ENABLE_GUI) {
+        if (enable_gui) {
             my_sim_exec = new LightSimExec (this, my_light_arrays);
             my_window = new LightSimWindow (this, my_light_arrays);
 
