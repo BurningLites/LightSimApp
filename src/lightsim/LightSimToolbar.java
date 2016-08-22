@@ -346,7 +346,7 @@ public class LightSimToolbar extends JPanel
         if (src == controller_cbx && event.getStateChange() == ItemEvent.SELECTED)
             {
             log.info("toolbar event: " + event.getSource());
-            my_exec.resetAndRun();
+            my_exec.switchController();
             }
         }
     

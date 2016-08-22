@@ -110,7 +110,22 @@ public class LightSimExec implements ActionListener, Runnable
         {
         System.out.println (String.format("load:%7.1f",100*load));
         }
-    
+
+  // ----- reset() --------------------------------------------------
+  //
+    public void reset ()
+        {
+        running = false;
+        paused = false;
+        my_light_array.reset();
+        my_light_sim.update();
+        my_toolbar.setToolbarState ("reset");
+        my_toolbar.enableControls (true);
+        my_toolbar.setStepField (-1);
+        my_toolbar.setTimeField (-1);
+        sim_thread = null;
+        }
+
   // ----- runLights() -----------------------------------------------
   //
     public void runLights (boolean start)
@@ -166,7 +181,30 @@ public class LightSimExec implements ActionListener, Runnable
             sim_thread = new Thread (this);
         sim_thread.start();
         }
-    
+
+  // ----- switchController() -----------------------------------------
+  //
+    public void switchController()
+        {
+        boolean saved_paused = paused;
+        boolean saved_running = running;
+
+        if (running && !paused)
+          { paused = true;
+            if (sim_thread != null)
+                try { sim_thread.join(); }
+                  catch (InterruptedException ie)  {}
+            }
+        reset();
+
+        if (saved_running)
+          { my_toolbar.setToolbarState(saved_paused ? "pause" : "run");
+            runLights (!saved_paused);
+            }
+        running = saved_running;
+        paused = saved_paused;
+        }
+
   // ----- time_increment() -------------------------------------------
   //
     private void time_increment()
@@ -208,30 +246,6 @@ public class LightSimExec implements ActionListener, Runnable
                 my_toolbar.setToolbarState ("pause");
                 break;
             }
-        }
-    
-    public void reset ()
-        {
-         running = false;
-         paused = false;
-         my_light_array.reset();
-         my_light_sim.update();
-         my_toolbar.setToolbarState ("reset");
-         my_toolbar.enableControls (true);
-         my_toolbar.setStepField (-1);
-         my_toolbar.setTimeField (-1);
-         sim_thread = null;
-        }
-    
-    public void resetAndRun ()
-        {
-        paused = true;
-        if (sim_thread != null) {
-            try { sim_thread.join(); }
-            catch (InterruptedException ie) { }
-        }
-        reset();
-        runLights (true);
         }
     
   // ========== Runnable support =====================================
