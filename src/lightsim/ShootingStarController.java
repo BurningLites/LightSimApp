@@ -29,7 +29,7 @@ public class ShootingStarController extends LightController {
     }
     
     @Override
-    public boolean step(int time, int step) {
+    public boolean step(int time) {
         clearLights();
         
         double timeSeconds = (double)time / 1e3;
