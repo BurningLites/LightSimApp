@@ -48,7 +48,6 @@ public class LeanExec implements Runnable {
     @Override
     public void run() {
         if (controller != null) {
-            Console.log("calling step with time: %f", clock.getCurrentTime());
             controller.step((int)(clock.getCurrentTime() * 1000));
         }
         step++;

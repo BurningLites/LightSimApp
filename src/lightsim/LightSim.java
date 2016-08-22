@@ -76,7 +76,7 @@ public class LightSim implements ActionListener
             ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1);
 
             LeanExec leanExec = new LeanExec(exec, my_light_arrays);
-            leanExec.setController(new HelloWorldController());
+            leanExec.setController(new ShootingStarController());
             leanExec.start();  // Starts running LeanExec on the executor.
         }
     }

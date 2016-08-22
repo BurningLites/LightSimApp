@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import lightsim.LightArray.Light;
 
 public class SpiWriter {
     
@@ -47,14 +48,16 @@ public class SpiWriter {
         int writeIndex = 0;
         
         int count = 0;
-        for (LightArray.Light light : lights.getLights()) {
-            Color color = light.isOn() ? light.getColor() : Color.BLACK;
-            color_data[writeIndex] = oneToZero((byte)color.getRed());
-            color_data[writeIndex + 1] = oneToZero((byte)color.getGreen());
-            color_data[writeIndex + 2] = oneToZero((byte)color.getBlue());
-            writeIndex += 3;
+        for (Light string[] : lights.getStrings()) {
+            for (Light light : string) {
+                Color color = light.isOn() ? light.getColor() : Color.BLACK;
+                color_data[writeIndex] = oneToZero((byte)color.getRed());
+                color_data[writeIndex + 1] = oneToZero((byte)color.getGreen());
+                color_data[writeIndex + 2] = oneToZero((byte)color.getBlue());
+                writeIndex += 3;
+            }
 
-            // TEMP: Only send 25 lights for now.
+            // TEMP: Only send 25 strings for now.
             count++;
             if (count == 25) {
                 break;
