@@ -7,17 +7,8 @@ public class LeanExec implements Runnable {
 
     ScheduledExecutorService executor;
     LightArray lights;
+    AnimationClock clock;
     SpiWriter spiWriter;
-    
-    // Speed multiplier. 1 is real time, 0.5 is half time, etc.
-    double speed = 1;
-    
-    // Last wallclock time in seconds.
-    double lastWallclockTimeSeconds = 0;
-    
-    // Current "abstract" time in seconds. At each tick, this is incremented
-    // by the delta in wallclock time multiplied by the current speed.
-    double currentAbstractTimeSeconds = 0;
     
     // Current step number.
     int step;
@@ -27,6 +18,7 @@ public class LeanExec implements Runnable {
     public LeanExec(ScheduledExecutorService executor, LightArray lights) {
         this.executor = executor;
         this.lights = lights;
+        clock = new AnimationClock();
         spiWriter = SpiWriter.getWriter();
         if (spiWriter == null) {
             Console.log("Couldn't get writer. :(");
@@ -34,8 +26,6 @@ public class LeanExec implements Runnable {
     }
     
     public void start() {
-        lastWallclockTimeSeconds = 0;
-        currentAbstractTimeSeconds = 0;
         step = 0;
         
         long updateIntervalMicros = (long)(1e6 / FRAMERATE_HZ);
@@ -52,28 +42,19 @@ public class LeanExec implements Runnable {
     }
     
     public void setSpeed(double speed) {
-        this.speed = speed;
+        clock.setSpeed(speed);
     }
     
     @Override
     public void run() {
-        double now = wallclockTimeSeconds();
-        if (lastWallclockTimeSeconds > 0) {
-           double timeDelta = (now - lastWallclockTimeSeconds) * speed;
-           currentAbstractTimeSeconds += timeDelta;
-        }
-        lastWallclockTimeSeconds = now;
         if (controller != null) {
-            controller.step((int)(currentAbstractTimeSeconds * 1000), step);
+            Console.log("calling step with time: %f", clock.getCurrentTime());
+            controller.step((int)(clock.getCurrentTime() * 1000), step);
         }
         step++;
         
         if (spiWriter != null) {
             spiWriter.writeLights(lights);
         }
-    }
-    
-    private double wallclockTimeSeconds() {
-        return System.currentTimeMillis() / 1e3;
     }
 }
