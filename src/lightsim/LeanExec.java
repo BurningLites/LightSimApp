@@ -63,7 +63,9 @@ public class LeanExec implements Runnable {
            currentAbstractTimeSeconds += timeDelta;
         }
         lastWallclockTimeSeconds = now;
-        controller.step((int)(currentAbstractTimeSeconds * 1000), step);
+        if (controller != null) {
+            controller.step((int)(currentAbstractTimeSeconds * 1000), step);
+        }
         step++;
         
         if (spiWriter != null) {
