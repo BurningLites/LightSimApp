@@ -15,6 +15,8 @@ package lightsim;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.util.logging.*;
+
 
 //======================================================================
 // class DiamondController
@@ -70,6 +72,9 @@ public class LightSimToolbar extends JPanel
         public double getSpeedFactor()  { return speed_factor; }
         public String toString()        { return name; }
         }
+
+    private static final Logger log =
+      Logger.getLogger(LightSimToolbar.class.getPackage().getName());
 
     private static ImageIcon  PAUSE_ICON, RESET_ICON, RUN_ICON, STEP_ICON;
     static
@@ -141,6 +146,7 @@ public class LightSimToolbar extends JPanel
         run_toolbar.addSeparator();
         
         controller_cbx = new JComboBox();
+        controller_cbx.addItemListener (this);
         run_toolbar.add (controller_cbx);
 
         run_toolbar.add (new JLabel(" step:"));
@@ -336,6 +342,11 @@ public class LightSimToolbar extends JPanel
              && event.getStateChange() == ItemEvent.SELECTED)
             {
             my_exec.setFrameRate (getFrameRate());
+            }
+        if (src == controller_cbx && event.getStateChange() == ItemEvent.SELECTED)
+            {
+            log.info("toolbar event: " + event.getSource());
+            my_exec.resetAndRun();
             }
         }
     

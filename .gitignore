@@ -11,4 +11,8 @@
 #
 build
 dist
+nbproject/private
 
+# vim
+#
+*.sw*

@@ -82,7 +82,6 @@ public class HelloWorldController extends LightController
 
   // ----- step() -----------------------------------------------------
   //
-    @Override
     public boolean step (int clock)
         {
         if (clock >= t_next)
