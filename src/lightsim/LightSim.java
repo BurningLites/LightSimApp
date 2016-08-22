@@ -64,6 +64,7 @@ public class LightSim implements ActionListener
             my_sim_exec.addController (new PulseController());
             my_sim_exec.addController (new ColorCubeController());
             my_sim_exec.addController (new TimesSquareController());
+            my_sim_exec.addController (new ShootingStarController());
         } else {
             // Not really *just* GUI disabled; really a totally different mode
             // of execution based on a ScheduleThreadPoolExecutor providing a

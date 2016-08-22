@@ -89,6 +89,7 @@ public class LightArray
     private int temp_idx;
     private Light[][][] all_lights, left_lights, right_lights;
 
+    private Light[][] strings;
     private static final Color whites[] =
         {
             new Color(155,155,155), new Color (180,180,180),
@@ -130,6 +131,8 @@ public class LightArray
         right_lights = new Light[RIGHT_DIMENSIONS[0]]
                                 [RIGHT_DIMENSIONS[1]]
                                 [RIGHT_DIMENSIONS[2]];
+        strings = new Light[50][10];
+        
         for (int ix=0; ix<5; ix++)
             {
             for (int iy=0; iy<10; iy++)
@@ -141,12 +144,14 @@ public class LightArray
                     my_lights.add (l);
                     all_lights[ix][iy][iz] = l;
                     left_lights[ix][iy][iz] = l;
+                    strings[ix + 5 * iz][9 - iy] = l;
 
                     l = new Light (ix+12,iy,iz, whites[iz]);
                     l.setIndices (ix+12,iy,iz);
                     my_lights.add (l);
                     all_lights[ix+5][iy][iz] = l;
                     right_lights[ix][iy][iz] = l;
+                    strings[25 + ix + 5 * iz][9 - iy] = l;
                     }
                 }
             }
@@ -164,6 +169,7 @@ public class LightArray
     public Light[][][] getAllLights()   { return all_lights; }
     public Light[][][] getLeftLights()  { return left_lights; }
     public Light[][][] getRightLights() { return right_lights; }
+    public Light[][] getStrings() { return strings; }
 
   // ----- fill -------------------------------------------------
   //
