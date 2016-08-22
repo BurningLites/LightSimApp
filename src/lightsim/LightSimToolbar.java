@@ -195,6 +195,7 @@ public class LightSimToolbar extends JPanel
     public void addController (LightController controller)
         {
         controller_cbx.addItem (controller);
+        controller_cbx.setSelectedItem (controller);
         }
 
   // ----- create_button() --------------------------------------------
