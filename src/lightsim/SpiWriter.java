@@ -26,8 +26,9 @@ public class SpiWriter {
             Method setupModeMethod = spiClass.getMethod("wiringPiSPISetupMode", int.class, int.class, int.class);
             dataRwMethod = spiClass.getMethod("wiringPiSPIDataRW", int.class, byte[].class, int.class);
             
+            // Open both SPI channels. One channel is dedicated to each microcontroller.
             setupModeMethod.invoke(null, 0, SPI_RATE, 0);
-            
+            setupModeMethod.invoke(null, 1, SPI_RATE, 0);
         } catch (Exception e) {
             Console.log("Error initializing SpiWriter: " + e);
             return null;
@@ -42,35 +43,40 @@ public class SpiWriter {
     private SpiWriter() {};
     
     public void writeLights(LightArray lights) {
-        ArrayList<LightArray.Light> lightArray = lights.getLights();
+        Light strings[][] = lights.getStrings();
         
-        byte color_data[] = new byte[lightArray.size() * 3];
+        int numBytesPerSide = 250 * 3;
+        byte color_data_left[] = new byte[numBytesPerSide];
+        byte color_data_right[] = new byte[numBytesPerSide];
         int writeIndex = 0;
         
         int count = 0;
-        for (Light string[] : lights.getStrings()) {
-            for (Light light : string) {
-                Color color = light.isOn() ? light.getColor() : Color.BLACK;
-                color_data[writeIndex] = oneToZero((byte)color.getRed());
-                color_data[writeIndex + 1] = oneToZero((byte)color.getGreen());
-                color_data[writeIndex + 2] = oneToZero((byte)color.getBlue());
-                writeIndex += 3;
-            }
-
-            // TEMP: Only send 25 strings for now.
-            count++;
-            if (count == 25) {
-                break;
+        for (int sideNum = 0; sideNum < 2; sideNum++) {
+            int baseStringIndex = sideNum * 25;
+            byte array_to_write[] = sideNum == 0 ? color_data_left : color_data_right;
+            for (int stringIndex = 0; stringIndex < 25; stringIndex++) {
+                for (Light light : strings[baseStringIndex + stringIndex]) {
+                    Color color = light.isOn() ? light.getColor() : Color.BLACK;
+                    array_to_write[writeIndex] = oneToZero((byte)color.getRed());
+                    array_to_write[writeIndex + 1] = oneToZero((byte)color.getGreen());
+                    array_to_write[writeIndex + 2] = oneToZero((byte)color.getBlue());
+                    writeIndex += 3;
+              }
             }
         }
 
         // Send magic start sequence.
         byte start_byte[] = {0x01, 0x01, 0x01, 0x01};
         try {
+            // Write left array.
             dataRwMethod.invoke(null, 0, start_byte, start_byte.length);
 
             // System.out.println("Sending " + color_data.length + " bytes of color data.");
-            dataRwMethod.invoke(null, 0, color_data, color_data.length);
+            dataRwMethod.invoke(null, 0, color_data_left, color_data_left.length);
+
+            // Write right array.
+            dataRwMethod.invoke(null, 1, start_byte, start_byte.length);
+            dataRwMethod.invoke(null, 1, color_data_right, color_data_right.length);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             Console.log("Error invoking SPIDataRW: " + e);
         }
