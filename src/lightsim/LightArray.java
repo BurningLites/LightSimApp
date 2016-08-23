@@ -182,6 +182,54 @@ public class LightArray
             }
         }
 
+  // ----- fillXPlane() -----------------------------------------------
+  //
+    public void fillXPlane (int x_idx, Light[][][] lights, Color color)
+        {
+        if (x_idx < 0 || lights.length <= x_idx)
+            return;
+        int ny = lights[0].length;
+        int nz = lights[0][0].length;
+        for (int iy=0; iy<ny; iy++)
+            for (int iz=0; iz<nz; iz++)
+              { Light l = lights[x_idx][iy][iz];
+                l.setColor (color);
+                l.on = true;
+                }
+        }
+    
+  // ----- fillYPlane() -----------------------------------------------
+  //
+    public void fillYPlane (int y_idx, Light[][][] lights, Color color)
+        {
+        if (y_idx < 0 || lights[0].length <= y_idx)
+            return;
+        int nx = lights.length;
+        int nz = lights[0][0].length;
+        for (int ix=0; ix<nx; ix++)
+            for (int iz=0; iz<nz; iz++)
+              { Light l = lights[ix][y_idx][iz];
+                l.setColor (color);
+                l.on = true;
+                }
+        }
+    
+  // ----- fillZPlane() -----------------------------------------------
+  //
+    public void fillZPlane (int z_idx, Light[][][] lights, Color color)
+        {
+        if (z_idx < 0 || lights[0][0].length <= z_idx)
+            return;
+        int nx = lights.length;
+        int ny = lights[0].length;
+        for (int ix=0; ix<nx; ix++)
+            for (int iy=0; iy<ny; iy++)
+              { Light l = lights[ix][iy][z_idx];
+                l.setColor (color);
+                l.on = true;
+                }
+        }
+    
   // ----- get_temp_light() -------------------------------------------
   //
     private Light get_temp_light()
