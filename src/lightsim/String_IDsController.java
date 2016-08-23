@@ -18,6 +18,16 @@ import lightsim.LightArray.Light;
 //======================================================================
 // class String_IDsController
 //======================================================================
+//
+// This controller should help in identifying particular light strings.
+// It is a single step controller that sets up each string with the
+// binary code of its x and z coordinates.  These are relative to the
+// array in which it resides, i.e., left or right.  The codes for the
+// left and right arrays are in red and green, respectively.
+// The x code is in the lower half of the light between white and blue
+// lights.  The z code is in the upper half between two blue lights.
+// The coordinates are labeled as 1, 2, 3, 4, 5.
+//
 
 public class String_IDsController extends LightController
     {
@@ -45,7 +55,8 @@ public class String_IDsController extends LightController
         int nym1 = ny - 1;
         int nz = left_lights[0][0].length;
         
-      // Set the bottom and top layers of lights to white and blue.
+      // Set the bottom, middle and top layers of lights to white
+      // and a couple of shades of blue.
       //
         my_light_array.reset();
         
@@ -58,6 +69,8 @@ public class String_IDsController extends LightController
         my_light_array.fillYPlane (5, right_lights, LIGHTER_BLUE);
         my_light_array.fillYPlane (nym1, right_lights, BRIGHTER_BLUE);
         
+      // Set up the binary codes for x and z coordinates.  Start with
+      // 1 so that each code has at least one visible bit.
       //
         for (int ix=0; ix<nx; ix++)
             for (int iz=0; iz<nz; iz++)
