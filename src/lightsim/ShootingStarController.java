@@ -8,6 +8,8 @@ import lightsim.LightArray.Light;
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
     static final double STAR_FREQUENCY = 10;
+    static final double STAR_DURATION = 2;
+    static final double INTENSITY_MULTIPLIER = 200;
     
     LightArray.Light strings[][];
     LightArray lightArray;
@@ -51,7 +53,7 @@ public class ShootingStarController extends LightController {
         for (int i = 0; i < starsToAdd; i++) {
             int stringNum = random.nextInt(50);
             StarAnimation animation = new StarAnimation(stringNum);
-            animation.setDuration(3);
+            animation.setDuration(STAR_DURATION);
             animation.start(time);
             animations.add(animation);
         }
@@ -84,7 +86,7 @@ public class ShootingStarController extends LightController {
         
         public void update(double t) {
             double starHeight = 11 * t - 0.5;  // starHeight ranges from -0.5 to 10.5
-            double intensity = 0.25 + t * 0.75;  // intensity ranges from 0.25 to 1.
+            double intensity = 0.1 + t * 0.9;  // intensity ranges from 0.25 to 1.
             
             double lowerLight = Math.floor(starHeight);
             double upperLight = Math.ceil(starHeight);
@@ -96,17 +98,24 @@ public class ShootingStarController extends LightController {
             
             // Now write to the lights.
             if (lowerLight >= 0 && lowerLight < 10) {
-                strings[columnIndex][9 - (int)lowerLight]
-                    .setColor(colorForIntensity(lowerIntensity));
+                addIntensityToLight(strings[columnIndex][9 - (int)lowerLight], lowerIntensity);
             }
             if (upperLight >=0 && upperLight < 10) {
-                strings[columnIndex][9 - (int)upperLight]
-                    .setColor(colorForIntensity(upperIntensity));
+                addIntensityToLight(strings[columnIndex][9 - (int)upperLight], upperIntensity);
             }
+        }
+
+        private void addIntensityToLight(Light light, double intensity) {
+            Color currentColor = light.getColor();
+            int value = (int)(intensity * INTENSITY_MULTIPLIER);
+            Color newColor = new Color(Math.min(255, currentColor.getRed() + value),
+                                       Math.min(255, currentColor.getBlue() + value),
+                                       Math.min(255, currentColor.getGreen() + value));
+            light.setColor(newColor);
         }
         
         private Color colorForIntensity(double intensity) {
-            int value = Math.min(255, (int)(intensity * 400));
+            int value = Math.min(255, (int)(intensity * INTENSITY_MULTIPLIER));
             return new Color(value, value, value);
         }
     }

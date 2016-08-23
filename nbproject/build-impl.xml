@@ -1042,6 +1042,15 @@ is divided into following sections:
             </customize>
         </j2seproject1:java>
     </target>
+
+    <target depends="init,compile" description="Run without GUI" name="run-no-gui">
+        <j2seproject1:java>
+            <customize>
+                <arg line="--no-gui ${application.args}"/>
+            </customize>
+        </j2seproject1:java>
+    </target>
+
     <target name="-do-not-recompile">
         <property name="javac.includes.binary" value=""/>
     </target>
@@ -1053,6 +1062,7 @@ is divided into following sections:
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <j2seproject1:java classname="${run.class}" classpath="${run.test.classpath}"/>
     </target>
+
     <!--
                 =================
                 DEBUGGING SECTION
