@@ -24,7 +24,7 @@ public class TimesSquareController extends LightController
     {
     private static final String HELLO_WORLD = "HELLO WORLD ! ";
     private static final Color[]
-        RAINBOW = { Color.RED, Color.ORANGE, Color.YELLOW,
+        RAINBOW = { Color.RED, new Color(255,127,0), Color.YELLOW,
                     Color.GREEN, new Color(101,101,255), Color.MAGENTA};
     
     private Light[][] lights;
