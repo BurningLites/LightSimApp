@@ -142,6 +142,21 @@ public abstract class LightController
             }
         }
 
+  // ----- pick_number() -------------------------------------------
+  //
+  // Randomly pick a number within the given range (inclusive).  The
+  // probably of selecting a particular number is 1 / (uprbnd-lwrbnd+1).
+  // Thus,
+  //        pick_number (0, 1)
+  // returns 0 or 1, each with a probably of 0.5.
+  //
+    protected int pick_number (int lwrbnd, int uprbnd)
+        {
+        double pick = (uprbnd - lwrbnd + 1) * Math.random();
+        int ipick = (int) pick;
+        return lwrbnd + ipick;
+        }
+
   // ----- set_y_layer() -------------------------------------------
   //
     protected void set_y_layer (Light layer[][], byte pattern[],

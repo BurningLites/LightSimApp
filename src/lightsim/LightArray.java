@@ -52,6 +52,11 @@ public class LightArray
             this.on = light.on;
             this.color = light.color;
             }
+        public void setState (Color _color, boolean _on)
+            {
+            color = _color;
+            on = _on;
+            }
 
         public boolean isOn() {
             return on;
@@ -171,14 +176,18 @@ public class LightArray
     public Light[][][] getRightLights() { return right_lights; }
     public Light[][] getStrings() { return strings; }
 
-  // ----- fill -------------------------------------------------
+  // ----- fill() ----------------------------------------------------
   //
     public void fill (Color color)
+        {
+        fill (color, true);
+        }
+    public void fill (Color color, boolean on)
         {
         for (Light l : my_lights)
             {
             l.color = color;
-            l.on = true;
+            l.on = on;
             }
         }
 

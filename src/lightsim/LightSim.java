@@ -61,6 +61,7 @@ public class LightSim implements ActionListener
             my_sim_exec = new LightSimExec (this, my_light_arrays);
             my_window = new LightSimWindow (this, my_light_arrays);
 
+            my_sim_exec.addController (new SnakeController());
             my_sim_exec.addController (new ColorCubeController());
             my_sim_exec.addController (new DiamondController());
             my_sim_exec.addController (new GameOfLifeController());
@@ -68,7 +69,7 @@ public class LightSim implements ActionListener
             my_sim_exec.addController (new PulseController());
             my_sim_exec.addController (new ShootingStarController());
             my_sim_exec.addController (new SpiralController());
-            my_sim_exec.addController (new String_IDsController());
+            my_sim_exec.addController (new StringIDsController());
             my_sim_exec.addController (new TimesSquareController());
         } else {
             // Not really *just* GUI disabled; really a totally different mode
