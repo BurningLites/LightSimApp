@@ -8,7 +8,7 @@
 //
 //*************************************************************************
 
-//----------------------------------------- String_IDsController.java -----
+//----------------------------------------- StringIDsController.java -----
 
 package lightsim;
 
@@ -16,7 +16,7 @@ import java.awt.Color;
 import lightsim.LightArray.Light;
 
 //======================================================================
-// class String_IDsController
+// class StringIDsController
 //======================================================================
 //
 // This controller should help in identifying particular light strings.
@@ -29,7 +29,7 @@ import lightsim.LightArray.Light;
 // The coordinates are labeled as 1, 2, 3, 4, 5.
 //
 
-public class String_IDsController extends LightController
+public class StringIDsController extends LightController
     {
     private final static Color BRIGHTER_BLUE = new Color (55,55,255);
     private final static Color LIGHTER_BLUE = new Color (110,110,255);
