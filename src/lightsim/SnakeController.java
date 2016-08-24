@@ -32,54 +32,6 @@ import lightsim.LightArray.Light;
 
 public class SnakeController extends LightController
     {
-  //-------------------------------------------------------------------
-  // inner class Sprite
-  //
-    protected class Sprite
-        {
-        protected boolean alive = true;
-
-        public boolean hasLight (Light l)       { return false; }
-        public void setAlive (boolean value)    { alive = value; }
-        public boolean step (int clock)         { return alive; }
-        }
-  //
-  //-------------------------------------------------------------------
-
-  //-------------------------------------------------------------------
-  // inner class Snake
-  //
-    protected class Apple extends Sprite
-        {
-        private int t_next, cycle;
-        private static final int MY_DT = 50,
-                        BLINK_PERIOD = 5, BLINK_LENGTH = 1;
-        Light my_light;
-
-        public Apple()
-            {
-            my_light = pickRandomLight();
-            my_light.setState (Color.RED, true);
-            cycle = pick_number (0, BLINK_PERIOD-1);
-            t_next = 0;
-            }
-
-        @Override
-        public boolean hasLight (Light l)   { return l == my_light; }
-
-        @Override
-        public boolean step (int time)
-            {
-            if (alive && time > t_next)
-              { t_next = time + MY_DT;
-                cycle = (cycle + 1) % BLINK_PERIOD;
-                my_light.on = cycle >= BLINK_LENGTH;
-                }
-            if (my_light.color != Color.RED)
-                alive = false;
-            return alive;
-            }
-        }
 
   //-------------------------------------------------------------------
   // inner class Snake
@@ -91,27 +43,48 @@ public class SnakeController extends LightController
       //
         private ArrayList<Light> body;
         private Light  head;
-        private Color  color, darker_color;
+        private Color  color;
         private int t_next;
-        private int my_dt = 125;
-        private int grow, eat_cycle;
+        private int my_dt = 125, eat_dt = 33;
+        private int countdown, eat_cycle;
         private boolean eating_snake;
         private Snake my_big_meal;
         private boolean died;
+        private Color[] color_ramp = new Color[1000/eat_dt];
+        private static final int EAT_COUNTDOWN = 3;
         
         public Snake (Color color)
             {
             this.color = color;
-            darker_color = color.darker();
             body = new ArrayList<>();
             build_snake();
             t_next = 0;
+            
+          // Set the snake's color, and create a color ramp to use 
+          // when eating another snake.
+          //
+            int istart = 0, iend = color_ramp.length / 2;
+            float red   = color.getRed() / 255.0f,
+                  green = color.getGreen() / 255.0f,
+                  blue  = color.getBlue() / 255.0f;
+            for (int i=istart; i<iend; i++)
+              { float darker = 1.0f - 0.3f*i/(iend-istart-1);
+                color_ramp[i]
+                    = new Color (darker*red, darker*green, darker*blue);
+                }
+            istart = iend;
+            iend = color_ramp.length;
+            for (int i=istart; i<iend; i++)
+              { float darker = 1.0f - 0.3f*(iend-i-1)/(iend-istart);
+                color_ramp[i]
+                    = new Color (darker*red, darker*green, darker*blue);
+                }
             }
 
         public boolean died()   { return died; }
         public Color getColor() { return color; }
-        public boolean isGrowing()  { return grow > 0; }
         public int getSize()    { return body.size(); }
+        public boolean isEating()   { return eating_snake; }
 
         public void addLight (Light light)
             {
@@ -135,7 +108,8 @@ public class SnakeController extends LightController
             do
                 {
                 clear();
-
+                alive = true;
+                
               // Starting with a randomly chosen initial position, create
               // the snake one light at a time.
               //
@@ -147,32 +121,26 @@ public class SnakeController extends LightController
               //
                 int ix = l.ix, iy = l.iy, iz = l.iz;
                 for (int n=0; n<5; n++)
-                  { find_adjacent_lights (ix, iy, iz, this);
-                    if (adjacent_lights.size() > 0)
-                      { int pick = pick_number (0, adjacent_lights.size()-1);
-                        Light next_light = adjacent_lights.get (pick);
-                        ix = next_light.ix;
-                        if (ix > 4)  ix = ix - 7;
-                        iy = next_light.iy;
-                        iz = next_light.iz;
-                        addLight (next_light);
-                        }
-                      else
-                      { continue build_snake;
-                        }
+                  { grow();
+                    if (!alive)
+                        continue build_snake;
                     }
                 snake_is_complete = true;
                 }
             while (!snake_is_complete);
+            update_color (color);
             }
 
       // ----- clear() --------------------------
       //
+        @Override
         public void clear()             
             {
             for (Light l : body)
                 l.setState (Color.BLACK, false);
             body.clear();
+            head = null;
+            my_big_meal = null;
             }
 
         public Light getHead()              { return head; }
@@ -187,9 +155,61 @@ public class SnakeController extends LightController
         @Override
         public boolean hasLight (Light l)   { return body.contains (l); }
 
+      // ----- grow() -------------------------
+      //
+        private void grow()
+            {
+            Light tail = getTail();
+            int ix = tail.ix;
+            if (ix > 4)  ix = ix - 7;
+            int iy = tail.iy;
+            int iz = tail.iz;
+            find_adjacent_lights (ix, iy, iz, this);
+            if (adjacent_lights.size() > 0)
+              { int pick = LSUtils.pickNumber (0, adjacent_lights.size()-1);
+                Light new_tail = adjacent_lights.get (pick);
+                new_tail.setState (color, true);
+                body.add (0, new_tail);
+                }
+              else
+              { died = true;
+                eating_snake = false;
+                setAlive (false);
+                }
+            }
+
       // ----- eat_snake() --------------------
       //
         private void eat_snake()
+            {
+            eat_cycle = ++eat_cycle % (1000 / eat_dt);
+            update_color (color_ramp[eat_cycle]);
+
+          // Preliminaries - wait until the victim is really dead.
+          //
+            if (countdown > 0)
+              { if (eat_cycle == 0)
+                  { --countdown;
+                    float pale_factor 
+                        = 1.0f * ((EAT_COUNTDOWN-countdown) / EAT_COUNTDOWN);
+                    float red = my_big_meal.color.getRed();
+                    red = Float.min (1.0f, red + pale_factor*(1.0f-red));
+                    float green = my_big_meal.color.getGreen();
+                    green = Float.min (1.0f, green + pale_factor*(1.0f-green));
+                    float blue = my_big_meal.color.getBlue();
+                    blue = Float.min (1.0f, blue + pale_factor*(1.0f-blue));
+                    my_big_meal.update_color (new Color(red,green,blue));
+                    }
+                }
+              else
+              { if (eat_cycle % 3 == 0)
+                    eat_swallow();
+                }
+            }
+
+      // ---- eat_swallow() ---------------------
+      //
+        private void eat_swallow()
             {
             Light its_tail = my_big_meal.getTail();
             if (its_tail != null)
@@ -211,28 +231,60 @@ public class SnakeController extends LightController
                   else
                   { my_big_meal.removeLight (its_tail);
                     }
-                if (eat_cycle%2 == 0)  grow++;
-                eat_cycle++;
+                grow();
                 }
               else
               { eating_snake = false;
+                my_dt = 125 + 3*body.size();
+                update_color (color);
                 }
+            }
+        
+      // ----- attack_snake() -------------------
+      //
+      // We didn't find an apple in the adjacent_lights, but there
+      // may be a snake.  Pick a direction, and if it's a snake,
+      // attack it.
+      //
+        private Light attack_snake_maybe (
+                                ArrayList<Light> adjacent_lights)
+            {
+            int pick = LSUtils.pickNumber (0, adjacent_lights.size()-1);
+            Light l = adjacent_lights.get (pick);
+            if (l.color != Color.BLACK)
+              { Sprite sprite = findSprite (l);
+                if (sprite != null && sprite instanceof Snake)
+                  { eating_snake = true;
+                    my_big_meal = (Snake) sprite;
+                    my_big_meal.setAlive (false);
+                    eat_cycle = 0;
+                    countdown = EAT_COUNTDOWN;
+                    my_dt = eat_dt;
+                    }
+                }
+            return l;
             }
         
       // ----- eat_something() ------------------
       //
-        private void eat_something (Sprite food)
+      // Check the adjacent lights for food.  If found, eat
+      // the food and return that light for use as the next light.
+      // Otherwise, return null.
+      //
+        private Light eat_something_maybe (
+                                ArrayList<Light> adjacent_lights)
             {
-            food.setAlive (false);
-            if (food instanceof Apple)
-              { grow = 1;
+            for (Light l : adjacent_lights)
+              { if (l.color != Color.BLACK)
+                  { Sprite food = findSprite (l);
+                    if (food != null && food instanceof Apple)
+                      { food.setAlive (false);
+                        grow();
+                        return l;
+                        }
+                    }
                 }
-            else if (food instanceof Snake)
-              { eating_snake = true;
-                my_big_meal = (Snake) food;
-                my_big_meal.update_color (my_big_meal.darker_color);
-                eat_cycle = 0;
-                }
+            return null;
             }
 
       // ----- move() ---------------------------
@@ -245,13 +297,9 @@ public class SnakeController extends LightController
             int iz = head.iz;
             find_adjacent_lights (ix, iy, iz, this);
             if (adjacent_lights.size() > 0)
-              { int pick = pick_number (0, adjacent_lights.size()-1);
-                Light next_light = adjacent_lights.get (pick);
-                if (next_light.getColor() != Color.BLACK)
-                    {
-                    Sprite food = findSprite (next_light);
-                    if (food != null)
-                        eat_something (food);
+              { Light next_light = eat_something_maybe (adjacent_lights);
+                if (next_light == null)
+                  { next_light = attack_snake_maybe (adjacent_lights);
                     }
                 nextLight (next_light);
                 }
@@ -266,14 +314,8 @@ public class SnakeController extends LightController
         public void nextLight (Light light)
             {
             head.setColor (color);
-            if (grow <= 0)
-              { Light tail = body.get(0);
-                removeLight (tail);
-                }
-              else
-              { grow--;
-                my_dt += 10;     // As snake grows, it moves slower.
-                }
+            Light tail = body.get(0);
+            removeLight (tail);
             
             light.setState (Color.MAGENTA, true);
             head = light;
@@ -310,6 +352,7 @@ public class SnakeController extends LightController
             int nm1 = body.size() - 1;   // Avoid head.
             for (int i=0; i<nm1; i++)
                 body.get(i).setColor (color);
+            head.setState (Color.MAGENTA, true);
             }
         }
   //
@@ -317,11 +360,13 @@ public class SnakeController extends LightController
     
     Light[][][] lights;
     ArrayList<Light>  adjacent_lights;
-    ArrayList<Sprite>  my_sprites, dead_sprites, new_sprites;
+    ArrayList<Sprite>  my_sprites, dead_sprites;
+    ArrayList          new_sprites;
     int  nx, ny, nz, nxm1, nym1, nzm1;
 
-    private static final int N_APPLES = 10;
-    private Snake snake_victim;
+    private static final int N_APPLES = 5;
+    private int dead_snake_count;
+    private int new_delay = 7000, t_new;
     private Color dead_snake_color;
     
   // ----- constructor -------------------------------------------------
@@ -331,7 +376,7 @@ public class SnakeController extends LightController
         adjacent_lights = new ArrayList<>();
         my_sprites = new ArrayList<>();
         dead_sprites = new ArrayList<>();
-        new_sprites = new ArrayList<>();
+        new_sprites = new ArrayList();
         }
     
   // ----- name() ------------------------------------------------------
@@ -353,12 +398,24 @@ public class SnakeController extends LightController
         nxm1 = nx - 1;
         nym1 = ny - 1;
         nzm1 = nz - 1;
-        
+
+      // Clean out everything
+      //
         my_light_array.fill (Color.BLACK, false);
+        for (Sprite sprite : my_sprites)  sprite.clear();
+        my_sprites.clear();
+        for (Sprite sprite : dead_sprites)  sprite.clear();
+        dead_sprites.clear();
+        for (Object obj : new_sprites)
+            if (obj instanceof Sprite)  ((Sprite) obj).clear();
+        new_sprites.clear();
+        dead_snake_count = 0;
+        t_new = 0;
+
         my_sprites.add (new Snake (Color.GREEN));
-        my_sprites.add (new Snake (Color.ORANGE));
+        my_sprites.add (new Snake (new Color(0xFFAA22))); // Redish orange
         for (int i=0; i<N_APPLES; i++)
-            my_sprites.add (new Apple());
+            my_sprites.add (new Apple(pickRandomLight()));
         }
 
   // ----- find_adjacent_lights() --------------------------------------
@@ -442,9 +499,9 @@ public class SnakeController extends LightController
         boolean found_light = false;
         Light light = null;
         while (!found_light)
-          { int ix = pick_number (0, nxm1);
-            int iy = pick_number (0, nym1);
-            int iz = pick_number (0, nzm1);
+          { int ix = LSUtils.pickNumber (0, nxm1);
+            int iy = LSUtils.pickNumber (0, nym1);
+            int iz = LSUtils.pickNumber (0, nzm1);
             light = lights[ix][iy][iz];
             found_light = light.color == Color.BLACK;
             }
@@ -476,47 +533,116 @@ public class SnakeController extends LightController
           { boolean alive = sprite.step (time);
             if (!alive)
               { if (sprite instanceof Snake)
-                  { Snake dead_snake = (Snake) sprite;
+                  { dead_snake_count++;
+                    Snake dead_snake = (Snake) sprite;
                     dead_snake_color = dead_snake.getColor();
                     if (dead_snake.died())
                       { dead_snake.clear();
-                        new_sprites.add (new Snake (dead_snake_color));
                         }
-                      else
-                        snake_victim = dead_snake;
+                    new_sprites.add (dead_snake_color);
+                    t_new = 0;
                     }
                   else if (sprite instanceof Apple)
-                  { new_sprites.add (new Apple());
+                  { new_sprites.add (new Apple(pickRandomLight()));
                     }
                 dead_sprites.add (sprite);
                 }
             }
 
-        if (snake_victim != null && snake_victim.getSize() == 0)
-          { boolean snake_is_growing = false;
-            for (Sprite sprite : my_sprites)
-              { if (sprite instanceof Snake)
-                    snake_is_growing 
-                        = snake_is_growing || ((Snake) sprite).isGrowing();
-                }
-            if (!snake_is_growing)
-              { new_sprites.add (new Snake (dead_snake_color));
-                snake_victim = null;
-                }
+        if (dead_snake_count >= 2)
+          { init (my_light_array);
+            return true;
             }
 
+      // Always remove dead sprites from the list that we're animating.
+      //
         for (Sprite dead_sprite : dead_sprites)
             my_sprites.remove (dead_sprite);
         dead_sprites.clear();
-        for (Sprite new_sprite : new_sprites)
-            my_sprites.add (new_sprite);
-        new_sprites.clear();
+
+      // Only add newly created sprites when no snake is eating.
+      //
+        boolean snake_is_eating = false;
+        for (Sprite sprite : my_sprites)
+          { if (sprite instanceof Snake)
+              { snake_is_eating = ((Snake) sprite).isEating();
+                if (snake_is_eating)
+                  { t_new = 0;
+                    break;
+                    }
+                }
+            }
+        if (!snake_is_eating)
+          { if (t_new == 0)
+                t_new = time + new_delay;
+            if (time > t_new)
+              { for (Object obj : new_sprites)
+                  { if (obj instanceof Sprite)
+                        my_sprites.add ((Sprite) obj);
+                      else if (obj instanceof Color)
+                      { my_sprites.add (new Snake ((Color) obj));
+                         --dead_snake_count;
+                        }
+                    }
+                new_sprites.clear();
+                }
+            }
 
         increment_step();
 
         return true;
         }
     }
+
+  //-------------------------------------------------------------------
+  // inner class Snake
+  //
+    class Apple extends Sprite
+        {
+        private int t_next, cycle;
+        private static final int MY_DT = 33;
+
+        private static final Color[]  COLOR_RAMP = new Color[30];
+        static
+          { int istart = 0, iend = COLOR_RAMP.length / 2;
+            for (int i=istart; i<iend; i++)
+                COLOR_RAMP[i]
+                    = new Color (1.0f, 0.8f*i/(iend-istart), 0.8f*i/(iend-istart));
+            istart = iend;
+            iend = COLOR_RAMP.length;
+            for (int i=istart; i<iend; i++)
+                COLOR_RAMP[i]
+                    = new Color (1.0f, 0.8f*(iend-i-1)/(iend-istart),
+                                        0.8f*(iend-i-1)/(iend-istart));
+            }
+
+        Light my_light;
+
+        public Apple (Light light)
+            {
+            my_light = light;
+            my_light.setState (Color.RED, true);
+            cycle = LSUtils.pickNumber (0, COLOR_RAMP.length-1);
+            t_next = 0;
+            }
+
+        @Override
+        public boolean hasLight (Light l)   { return l == my_light; }
+
+        @Override
+        public boolean step (int time)
+            {
+            if (time > t_next)
+              { t_next = time + MY_DT;
+                cycle = ++cycle % COLOR_RAMP.length;
+                alive = my_light.color != Color.BLACK;
+                if (alive)
+                    my_light.color = COLOR_RAMP[cycle];
+                }
+            return alive;
+            }
+        }
+
 
 //*************************************************************************
 //
