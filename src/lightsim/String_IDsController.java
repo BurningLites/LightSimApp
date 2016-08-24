@@ -41,6 +41,7 @@ public class String_IDsController extends LightController
     
   // ----- init() ------------------------------------------------------
   //
+    @Override
     public void init (LightArray light_array)
         {
         super.init (light_array);
@@ -95,6 +96,7 @@ public class String_IDsController extends LightController
     
   // ----- step() ------------------------------------------------------
   //
+    @Override
     public boolean step (int clock)
         {
         increment_step();
