@@ -195,6 +195,9 @@ public class LightSimToolbar extends JPanel
     public void addController (LightController controller)
         {
         controller_cbx.addItem (controller);
+        int n_controllers = controller_cbx.getItemCount();
+        if (n_controllers > controller_cbx.getMaximumRowCount())
+            controller_cbx.setMaximumRowCount (n_controllers);
         }
 
   // ----- create_button() --------------------------------------------
