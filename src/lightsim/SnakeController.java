@@ -51,7 +51,7 @@ public class SnakeController extends SpriteController
         private Snake my_big_meal;
         private boolean died;
         private Color[] color_ramp = new Color[1000/eat_dt];
-        private static final int EAT_COUNTDOWN = 3;
+        private static final int EAT_COUNTDOWN = 4;
         
         public Snake (Color color)
             {
@@ -191,8 +191,9 @@ public class SnakeController extends SpriteController
             if (countdown > 0)
               { if (eat_cycle == 0)
                   { --countdown;
+                    float fcd = countdown;
                     float pale_factor 
-                        = 1.0f * ((EAT_COUNTDOWN-countdown) / EAT_COUNTDOWN);
+                        = (EAT_COUNTDOWN - fcd) / EAT_COUNTDOWN;
                     float red = my_big_meal.color.getRed();
                     red = Float.min (1.0f, red + pale_factor*(1.0f-red));
                     float green = my_big_meal.color.getGreen();
