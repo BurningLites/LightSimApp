@@ -13,6 +13,7 @@
 package lightsim;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import lightsim.LightArray.Light;
 
 //======================================================================
@@ -49,6 +50,40 @@ public abstract class LightController
     public static final Color[]
         RAINBOW = { Color.RED, new Color(255,127,0), Color.YELLOW,
                     Color.GREEN, new Color(101,101,255), Color.MAGENTA};
+    public static class BC_Color extends Color
+        {
+        public BC_Color (int r, int g, int b)   { super (r,g,b); }
+        public BC_Color (int r, int g, int b, int ix, int iy)
+            {
+            this (r,g,b);
+            this.ix = ix;
+            this.iy = iy;
+            }
+        public int ix, iy;
+        }
+    public static BC_Color[][] BRIGHT_COLOR_HEXAGON;
+    public static ArrayList<BC_Color> BRIGHT_COLORS;
+    static
+        {
+        BRIGHT_COLORS = new ArrayList<>();
+        BRIGHT_COLOR_HEXAGON = new BC_Color[11][];
+        for (int i=0; i<11; i++)
+          { int len = 11 - Math.abs (i-5);
+            BRIGHT_COLOR_HEXAGON[i] = new BC_Color[len];
+            }
+        for (int ir=0; ir<=5; ir++)
+            for (int ig=0; ig<=5; ig++)
+                for (int ib=0; ib<=5; ib++)
+                  {
+                    if ( ! (ir==5 || ig==5 || ib==5) )  continue;
+                    int ix = 5 + ib - ig;
+                    int iy = (10 + 2*ir - ig - ib - Math.abs(5-ix)) / 2;
+                    BC_Color bcc = new BC_Color (51*ir, 51*ig, 51*ib, ix,iy);
+                    BRIGHT_COLORS.add (bcc);
+                    BRIGHT_COLOR_HEXAGON[ix][iy] = bcc;
+                  }
+        }
+    
     protected LightSimExec  my_exec;
     protected LightArray    my_light_array;
     protected int           my_step;
@@ -145,6 +180,59 @@ public abstract class LightController
             }
         }
 
+  // ----- pickBrightColor() ------------------------------------------
+  //
+    public BC_Color pickBrightColor()
+        {
+        int ic = pick_number (0, BRIGHT_COLORS.size()-1);
+        return BRIGHT_COLORS.get (ic);
+        }
+    
+  // ----- pickAdjacentColor() ----------------------------------------
+  //
+    public BC_Color pickAdjacentColor (BC_Color bcc)
+        {
+        int cix = bcc.ix;
+        int ciy = bcc.iy;
+        ArrayList<BC_Color> adj_colors = new ArrayList<>();
+        for (int ix=-1; ix<=1; ix++)
+          { int ix_bch = cix + ix;
+            if (ix_bch < 0 || BRIGHT_COLOR_HEXAGON.length <= ix_bch)  
+                continue;
+            int y0, yn;
+            switch (ix)
+              {
+                case -1:
+                    if (ix_bch <= 5)  { y0 = -1;  yn = 0; }
+                    else              { y0 = 0;      yn = 1; }
+                    break;
+                case 0:
+                    y0 = -1;
+                    yn = 1;
+                    break;
+                case 1:
+                    if (ix_bch < 5)  { y0 = 0;     yn = 1; }
+                    else             { y0 = -1; yn = 0; }
+                    break;
+                default:
+                    y0 = 1;     // Don't execute inner loop
+                    yn = -1;
+                    System.err.println (
+                        "Error in pickAdjacentColor: cix,ciy=" + cix + " " + ciy);
+                    break;
+              }
+            for (int iy=y0; iy<=yn; iy++)
+              {
+                int iy_bch = ciy + iy;
+                if (    0 <= iy_bch
+                     && iy_bch < BRIGHT_COLOR_HEXAGON[ix_bch].length)
+                    adj_colors.add (BRIGHT_COLOR_HEXAGON[ix_bch][iy_bch]);
+              }
+          }
+        int ic = pick_number (0, adj_colors.size()-1);
+        return adj_colors.get(ic);
+        }
+    
   // ----- pick_number() -------------------------------------------
   //
   // Randomly pick a number within the given range (inclusive).  The
