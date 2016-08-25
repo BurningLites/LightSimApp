@@ -3,7 +3,7 @@ package lightsim;
 import java.util.concurrent.*;
 
 public class LeanExec implements Runnable {
-    static final int FRAMERATE_HZ = 60;
+    static final double FRAMERATE_HZ = 60;
 
     ScheduledExecutorService executor;
     LightArray lights;
