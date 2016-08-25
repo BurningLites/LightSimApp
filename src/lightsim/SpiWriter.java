@@ -12,6 +12,7 @@ public class SpiWriter {
     
     static final boolean ENABLE_SLOW_MODE = false; 
     static final int SPI_RATE = (int)(ENABLE_SLOW_MODE ? 500e3 : 2000e3);
+    static int busToWrite = 0;
     
     // Dynamically-loaded Spi.wiringPiSPIDataRW method.
     Method dataRwMethod;
@@ -48,11 +49,11 @@ public class SpiWriter {
         int numBytesPerSide = 250 * 3;
         byte color_data_left[] = new byte[numBytesPerSide];
         byte color_data_right[] = new byte[numBytesPerSide];
-        int writeIndex = 0;
         
         int count = 0;
         for (int sideNum = 0; sideNum < 2; sideNum++) {
             int baseStringIndex = sideNum * 25;
+            int writeIndex = 0;
             byte array_to_write[] = sideNum == 0 ? color_data_left : color_data_right;
             for (int stringIndex = 0; stringIndex < 25; stringIndex++) {
                 for (Light light : strings[baseStringIndex + stringIndex]) {
@@ -68,15 +69,22 @@ public class SpiWriter {
         // Send magic start sequence.
         byte start_byte[] = {0x01, 0x01, 0x01, 0x01};
         try {
-            // Write left array.
-            dataRwMethod.invoke(null, 0, start_byte, start_byte.length);
+            if (busToWrite == 0) {
+                // Write left array.
+                dataRwMethod.invoke(null, 0, start_byte, start_byte.length);
 
-            // System.out.println("Sending " + color_data.length + " bytes of color data.");
-            dataRwMethod.invoke(null, 0, color_data_left, color_data_left.length);
+                // System.out.println("Sending " + color_data_left.length + " bytes of left color data: " +
+                //     bytesToHex(color_data_right));
+                dataRwMethod.invoke(null, 0, color_data_left, color_data_left.length);
+            } else {
+                // Write right array.
+                dataRwMethod.invoke(null, 1, start_byte, start_byte.length);
 
-            // Write right array.
-            dataRwMethod.invoke(null, 1, start_byte, start_byte.length);
-            dataRwMethod.invoke(null, 1, color_data_right, color_data_right.length);
+                // System.out.println("Sending " + color_data_left.length + " bytes of right color data: " +
+                //     bytesToHex(color_data_right));
+                dataRwMethod.invoke(null, 1, color_data_right, color_data_right.length);
+            }
+            busToWrite = ~busToWrite;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             Console.log("Error invoking SPIDataRW: " + e);
         }
@@ -87,5 +95,17 @@ public class SpiWriter {
     // color component.
     public static byte oneToZero(byte value) {
         return value == 0x01 ? 0x00 : value;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+        char[] hexChars = new char[bytes.length * 2];
+        int v;
+        for ( int j = 0; j < bytes.length; j++ ) {
+            v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 }
