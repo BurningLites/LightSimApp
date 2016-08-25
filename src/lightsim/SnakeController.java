@@ -30,7 +30,7 @@ import lightsim.LightArray.Light;
 // This class introduces and is based on Sprites.
 //
 
-public class SnakeController extends LightController
+public class SnakeController extends SpriteController
     {
 
   //-------------------------------------------------------------------
@@ -82,6 +82,7 @@ public class SnakeController extends LightController
             }
 
         public boolean died()   { return died; }
+        public ArrayList<Light> getBody()   { return body; }
         public Color getColor() { return color; }
         public int getSize()    { return body.size(); }
         public boolean isEating()   { return eating_snake; }
@@ -113,7 +114,7 @@ public class SnakeController extends LightController
               // Starting with a randomly chosen initial position, create
               // the snake one light at a time.
               //
-                Light l = pickRandomLight();
+                Light l = pick_random_light();
                 addLight (l);
 
               // Add three more points to the snake.  If we can't find a
@@ -287,6 +288,22 @@ public class SnakeController extends LightController
             return null;
             }
 
+  // ----- explode() ----------------------------------------
+  //
+    private void explode (ArrayList<Sprite> new_sprites, Light[][][] lights)
+        {
+        int ic = -1, nc = RAINBOW.length;
+        for (Light l : body)
+          { ic = ++ic % nc;
+//           l.setColor (RAINBOW[ic]);
+            StarBurstSprite star = new StarBurstSprite (l, lights);
+            int delay = (int) (1000*Math.random() + 0.5);
+            star.setDelay (delay);
+            new_sprites.add (star);
+            }
+        eating_snake = false;
+        }
+
       // ----- move() ---------------------------
       //
         public void move()
@@ -347,6 +364,10 @@ public class SnakeController extends LightController
 
       // ----- update_color() ----------------------
       //
+        public void update_color()
+            {
+            update_color (color);
+            }
         private void update_color (Color color)
             {
             int nm1 = body.size() - 1;   // Avoid head.
@@ -359,22 +380,21 @@ public class SnakeController extends LightController
   //-------------------------------------------------------------------
     
     Light[][][] lights;
-    ArrayList<Light>  adjacent_lights;
-    ArrayList<Sprite>  my_sprites, dead_sprites;
-    ArrayList          new_sprites;
+    ArrayList<Sprite>  dead_sprites;
+    ArrayList new_sprites;
     int  nx, ny, nz, nxm1, nym1, nzm1;
 
     private static final int N_APPLES = 5;
     private int dead_snake_count;
     private int new_delay = 7000, t_new;
     private Color dead_snake_color;
+    private boolean exploding, start_explosion;
+    private int burst_count;
     
   // ----- constructor -------------------------------------------------
   //
     public SnakeController()
         {
-        adjacent_lights = new ArrayList<>();
-        my_sprites = new ArrayList<>();
         dead_sprites = new ArrayList<>();
         new_sprites = new ArrayList();
         }
@@ -401,7 +421,6 @@ public class SnakeController extends LightController
 
       // Clean out everything
       //
-        my_light_array.fill (Color.BLACK, false);
         for (Sprite sprite : my_sprites)  sprite.clear();
         my_sprites.clear();
         for (Sprite sprite : dead_sprites)  sprite.clear();
@@ -412,10 +431,25 @@ public class SnakeController extends LightController
         dead_snake_count = 0;
         t_new = 0;
 
+        exploding = false;
+        start_explosion = false;
+        burst_count = 0;
+
         my_sprites.add (new Snake (Color.GREEN));
         my_sprites.add (new Snake (new Color(0xFFAA22))); // Redish orange
         for (int i=0; i<N_APPLES; i++)
-            my_sprites.add (new Apple(pickRandomLight()));
+            my_sprites.add (new Apple(pick_random_light()));
+        }
+
+  // ----- clear_lights() ----------------------------------------------
+  //
+    private void clear_lights()
+        {
+        my_light_array.reset();
+        for (Sprite sprite : my_sprites)
+          { if (sprite instanceof Snake)
+                ((Snake) sprite).update_color();
+            }
         }
 
   // ----- find_adjacent_lights() --------------------------------------
@@ -424,90 +458,22 @@ public class SnakeController extends LightController
   // grid of lights, (2) not already part of the snake, (3) not an
   // adjacent corner or diagonal.
   //
-    private static final boolean[][][] NOT_OK =
-      { { { true,  true, true  },
-          { true, false, true },
-          { true,  true, true  } },
-        { { true, false, true },
-          { false, false, false },
-          { true, false, true } },
-        { { true,  true, true  },
-          { true, false, true },
-          { true,  true, true  } }
-      };
-
     private void find_adjacent_lights (int ix, int iy, int iz,
                                         Sprite self)
         {
-        adjacent_lights.clear();
-        
-        for (int dx=-1; dx<=1; dx++)
-            for (int dy=-1; dy<=1; dy++)
-                for (int dz=-1; dz<=1; dz++)
-                    {
-                  // Exclude the original position
-                  //
-                    if (dx==0 && dy==0 && dz==0)
-                        continue;
-
-                  // Exclude diagnonals and corners.
-                  //
-                    if (NOT_OK[dx+1][dy+1][dz+1])
-                        continue;
-                    
-                  // Calculcate a set of adjacent coordinates and
-                  // check that they are within the light grid.
-                  //
-                    int x = ix+dx;
-                    if (x < 0 || nxm1 < x)  continue;
-                    int y = iy+dy;
-                    if (y < 0 || nym1 < y)  continue;
-                    int z=iz+dz;
-                    if (z < 0 || nzm1 < z)  continue;
-                    
-                  // Check that the position is not part of the 
-                  // snake or any other object.
-                  //
-                    Light adjacent_light = lights[x][y][z];
-                    if (    (self != null && !self.hasLight(adjacent_light))
-                         || adjacent_light.color == Color.BLACK
-                         )
-                        adjacent_lights.add (adjacent_light);
-                    }
+        findAdjacentLights (ix, iy, iz, lights, self);
         }
 
-  // ----- findSprite() ------------------------------------------------
-  //
-  // Find the sprite that has the given light.
-  //
-    public Sprite findSprite (Light light)
-        {
-        for (Sprite sprite : my_sprites)
-          { if (sprite.hasLight (light))
-                return sprite;
-            }
-        return null;
-        }
-
-  // ----- pickRandomLight() -------------------------------------------
+  // ----- pick_random_light() -------------------------------------------
   //
   // Randomly pick a light that is not part of any other sprite.  
   // A light that is not part of a sprite has its color set to BLACK.
   //
-    public Light pickRandomLight()
+    private Light pick_random_light()
         {
-        boolean found_light = false;
-        Light light = null;
-        while (!found_light)
-          { int ix = LSUtils.pickNumber (0, nxm1);
-            int iy = LSUtils.pickNumber (0, nym1);
-            int iz = LSUtils.pickNumber (0, nzm1);
-            light = lights[ix][iy][iz];
-            found_light = light.color == Color.BLACK;
-            }
-        return light;
+        return pickRandomLight (lights);
         }
-    
+
   // ----- step() ------------------------------------------------------
   //
     @Override
@@ -529,29 +495,35 @@ public class SnakeController extends LightController
       // The dead_sprite and new_sprite lists are used to avoid
       // ArrayList comodifications in the main animation loop.
       //
+        Snake dead_snake = null;
+        
         for (Sprite sprite : my_sprites)
           { boolean alive = sprite.step (time);
             if (!alive)
-              { if (sprite instanceof Snake)
+                {
+                dead_sprites.add (sprite);
+                if (sprite instanceof Snake)
                   { dead_snake_count++;
-                    Snake dead_snake = (Snake) sprite;
+                    dead_snake = (Snake) sprite;
                     dead_snake_color = dead_snake.getColor();
                     if (dead_snake.died())
-                      { dead_snake.clear();
+                      { dead_snake.explode (new_sprites, lights);
+                        exploding = true;
+                        start_explosion = true;
+//                        dead_snake.clear();
                         }
                     new_sprites.add (dead_snake_color);
                     t_new = 0;
                     }
                   else if (sprite instanceof Apple)
-                  { new_sprites.add (new Apple(pickRandomLight()));
+                  { new_sprites.add (new Apple(pick_random_light()));
                     }
-                dead_sprites.add (sprite);
+                  else if (sprite instanceof StarBurstSprite)
+                  { --burst_count;
+                    exploding = burst_count > 0;
+                    clear_lights();
+                    }
                 }
-            }
-
-        if (dead_snake_count >= 2)
-          { init (my_light_array);
-            return true;
             }
 
       // Always remove dead sprites from the list that we're animating.
@@ -560,34 +532,66 @@ public class SnakeController extends LightController
             my_sprites.remove (dead_sprite);
         dead_sprites.clear();
 
-      // Only add newly created sprites when no snake is eating.
+      // If both snakes have died, it's time to reset.
       //
-        boolean snake_is_eating = false;
-        for (Sprite sprite : my_sprites)
-          { if (sprite instanceof Snake)
-              { snake_is_eating = ((Snake) sprite).isEating();
-                if (snake_is_eating)
-                  { t_new = 0;
-                    break;
-                    }
+        if (dead_snake_count >= 2 && !exploding)
+          { dead_snake_count = 0;
+            if (dead_snake != null)
+              { dead_snake.explode (new_sprites, lights);
+                exploding = true;
+                start_explosion = true;
                 }
-            }
-        if (!snake_is_eating)
-          { if (t_new == 0)
-                t_new = time + new_delay;
-            if (time > t_new)
-              { for (Object obj : new_sprites)
-                  { if (obj instanceof Sprite)
-                        my_sprites.add ((Sprite) obj);
-                      else if (obj instanceof Color)
-                      { my_sprites.add (new Snake ((Color) obj));
-                         --dead_snake_count;
-                        }
-                    }
-                new_sprites.clear();
+              else
+              { init (my_light_array);
+                return true;
                 }
             }
 
+      // Only add newly created sprites when no snake is eating.
+      //
+        if (start_explosion)
+          { start_explosion = false;
+            for (Object obj : new_sprites)
+              { if (obj instanceof StarBurstSprite)
+                  { burst_count++;
+                    Sprite star = (StarBurstSprite) obj;
+                    my_sprites.add (star);
+                    dead_sprites.add (star);    // borrow use of dead_sprites
+                    }
+                }
+            for (Sprite dead_sprite : dead_sprites) // remove StarBurstSprites
+                new_sprites.remove (dead_sprite);   // and keep everything else
+            dead_sprites.clear();
+            }
+        else if (!exploding)
+          { boolean snake_is_eating = false;
+            for (Sprite sprite : my_sprites)
+              { if (sprite instanceof Snake)
+                  { snake_is_eating = ((Snake) sprite).isEating();
+                    if (snake_is_eating)
+                      { t_new = 0;
+                        break;
+                        }
+                    }
+                }
+            if (!snake_is_eating)
+              { if (t_new == 0)
+                    t_new = time + new_delay;
+                if (time > t_new)
+                  { for (Object obj : new_sprites)
+                      { if (obj instanceof Sprite)
+                            my_sprites.add ((Sprite) obj);
+                          else if (obj instanceof Color)
+                          { my_sprites.add (new Snake ((Color) obj));
+                             --dead_snake_count;
+                            }
+                        }
+                    new_sprites.clear();
+                    }
+                }
+            }
+
+        
         increment_step();
 
         return true;

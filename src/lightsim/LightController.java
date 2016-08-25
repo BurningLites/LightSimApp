@@ -46,6 +46,9 @@ import lightsim.LightArray.Light;
  */
 public abstract class LightController
     {
+    public static final Color[]
+        RAINBOW = { Color.RED, new Color(255,127,0), Color.YELLOW,
+                    Color.GREEN, new Color(101,101,255), Color.MAGENTA};
     protected LightSimExec  my_exec;
     protected LightArray    my_light_array;
     protected int           my_step;
