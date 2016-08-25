@@ -292,10 +292,8 @@ public class SnakeController extends SpriteController
   //
     private void explode (ArrayList<Sprite> new_sprites, Light[][][] lights)
         {
-        int ic = -1, nc = RAINBOW.length;
         for (Light l : body)
-          { ic = ++ic % nc;
-//           l.setColor (RAINBOW[ic]);
+            {
             StarBurstSprite star = new StarBurstSprite (l, lights);
             int delay = (int) (1000*Math.random() + 0.5);
             star.setDelay (delay);
