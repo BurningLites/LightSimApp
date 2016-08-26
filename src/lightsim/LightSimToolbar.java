@@ -80,13 +80,13 @@ public class LightSimToolbar extends JPanel
     static
         {
         PAUSE_ICON =
-            ImageLoader.loadIcon ("Images/pause_icon.gif");
+            ImageLoader.loadIcon ("pause_icon.gif");
         RESET_ICON =
-            ImageLoader.loadIcon ("Images/reset_icon.gif");
+            ImageLoader.loadIcon ("reset_icon.gif");
         RUN_ICON =
-            ImageLoader.loadIcon ("Images/run_icon.gif");
+            ImageLoader.loadIcon ("run_icon.gif");
         STEP_ICON =
-            ImageLoader.loadIcon ("Images/step_icon.gif");
+            ImageLoader.loadIcon ("step_icon.gif");
         }
 
     private JButton     reset_button;
