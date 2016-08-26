@@ -10,9 +10,8 @@ import lightsim.LightArray.Light;
 
 public class SpiWriter {
     
-    static final boolean ENABLE_SLOW_MODE = false; 
+    static final boolean ENABLE_SLOW_MODE = false;
     static final int SPI_RATE = (int)(ENABLE_SLOW_MODE ? 500e3 : 2000e3);
-    static int busToWrite = 0;
     
     // Dynamically-loaded Spi.wiringPiSPIDataRW method.
     Method dataRwMethod;
@@ -66,25 +65,24 @@ public class SpiWriter {
             }
         }
 
-        // Send magic start sequence.
-        byte start_byte[] = {0x01, 0x01, 0x01, 0x01};
         try {
-            if (busToWrite == 0) {
-                // Write left array.
-                dataRwMethod.invoke(null, 0, start_byte, start_byte.length);
+            byte start_sequence[] = {0x01, 0x01, 0x01, 0x01};
 
-                // System.out.println("Sending " + color_data_left.length + " bytes of left color data: " +
-                //     bytesToHex(color_data_right));
-                dataRwMethod.invoke(null, 0, color_data_left, color_data_left.length);
-            } else {
-                // Write right array.
-                dataRwMethod.invoke(null, 1, start_byte, start_byte.length);
+            // Write left array.
+            byte start_sequence_to_send[] = start_sequence.clone();  // Data is mutated when sent so send a copy.
+            dataRwMethod.invoke(null, 0, start_sequence_to_send, start_sequence_to_send.length);
 
-                // System.out.println("Sending " + color_data_left.length + " bytes of right color data: " +
-                //     bytesToHex(color_data_right));
-                dataRwMethod.invoke(null, 1, color_data_right, color_data_right.length);
-            }
-            busToWrite = ~busToWrite;
+            // System.out.println("Sending " + color_data_left.length + " bytes of left color data: " +
+            //     bytesToHex(color_data_right));
+            dataRwMethod.invoke(null, 0, color_data_left, color_data_left.length);
+
+            // Write right array.
+            start_sequence_to_send = start_sequence.clone();
+            dataRwMethod.invoke(null, 1, start_sequence_to_send, start_sequence_to_send.length);
+
+            // System.out.println("Sending " + color_data_left.length + " bytes of right color data: " +
+            //     bytesToHex(color_data_right));
+            dataRwMethod.invoke(null, 1, color_data_right, color_data_right.length);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             Console.log("Error invoking SPIDataRW: " + e);
         }
