@@ -285,6 +285,7 @@ public class LightArray
         }
 
   // ----- releaseTemps() ---------------------------------------------
+  //
     public void releaseTemps()
         {
         for (Object obj : temp_objects)

@@ -61,6 +61,7 @@ public class LightSim implements ActionListener
             my_sim_exec = new LightSimExec (this, my_light_arrays);
             my_window = new LightSimWindow (this, my_light_arrays);
 
+            my_sim_exec.addController (new SimpleSnakesController());
             my_sim_exec.addController (new SnakeController());
             my_sim_exec.addController (new ColorCubeController());
             my_sim_exec.addController (new DiamondController());

@@ -26,6 +26,7 @@ public class Sprite
     public boolean hasLight (Light l)       { return false; }
     public void setAlive (boolean value)    { alive = value; }
     public boolean step (int clock)         { return alive; }
+
     }
 
 

@@ -79,8 +79,9 @@ public class SpriteController extends LightController
           { true,  true, true  } }
       };
 
-    public void findAdjacentLights (int ix, int iy, int iz,
-                                        Light[][][] lights, Sprite self)
+    public static void findAdjacentLights (int ix, int iy, int iz,
+                                        Light[][][] lights, Sprite self,
+                                        ArrayList<Light> adjacent_lights)
         {
         adjacent_lights.clear();
 
@@ -144,7 +145,7 @@ public class SpriteController extends LightController
   // Randomly pick a light that is not part of any other sprite.
   // A light that is not part of a sprite has its color set to BLACK.
   //
-    public Light pickRandomLight (Light[][][] lights)
+    public static Light pickRandomLight (Light[][][] lights)
         {
         int nxm1 = lights.length - 1,
             nym1 = lights[0].length - 1,
@@ -160,6 +161,26 @@ public class SpriteController extends LightController
             }
         return light;
         }
+
+  // ----- reset() -----------------------------------------------------
+  //
+  // Reset lights with BLACK to indicate absence of a sprite and with
+  // their state set to off.
+  //
+    public void reset (Light[][][] lights)
+        {
+        int nx = lights.length,
+            ny = lights[0].length,
+            nz = lights[0][0].length;
+        for (int ix=0; ix<nx; ix++)
+            for (int iy=0; iy<ny; iy++)
+                for (int iz=0; iz<nz; iz++)
+          { Light l = lights[ix][iy][iz];
+            l.color = Color.BLACK;
+            l.on = false;
+            }
+        }
+
     }
 
 //*************************************************************************

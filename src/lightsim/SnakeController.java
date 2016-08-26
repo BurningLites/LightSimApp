@@ -279,7 +279,7 @@ public class SnakeController extends SpriteController
             for (Light l : adjacent_lights)
               { if (l.color != Color.BLACK)
                   { Sprite food = findSprite (l);
-                    if (food != null && food instanceof Apple)
+                    if (food != null && food instanceof AppleSprite)
                       { food.setAlive (false);
                         grow();
                         return l;
@@ -381,7 +381,6 @@ public class SnakeController extends SpriteController
     Light[][][] lights;
     ArrayList<Sprite>  dead_sprites;
     ArrayList new_sprites;
-    int  nx, ny, nz, nxm1, nym1, nzm1;
 
     private static final int N_APPLES = 5;
     private int dead_snake_count;
@@ -409,14 +408,7 @@ public class SnakeController extends SpriteController
     public void init (LightArray light_array)
         {
         super.init (light_array);
-        
         lights = my_light_array.getAllLights();
-        nx = lights.length;
-        ny = lights[0].length;
-        nz = lights[0][0].length;
-        nxm1 = nx - 1;
-        nym1 = ny - 1;
-        nzm1 = nz - 1;
 
       // Clean out everything
       //
@@ -437,7 +429,7 @@ public class SnakeController extends SpriteController
         my_sprites.add (new Snake (Color.GREEN));
         my_sprites.add (new Snake (new Color(0xFFAA22))); // Redish orange
         for (int i=0; i<N_APPLES; i++)
-            my_sprites.add (new Apple(pick_random_light()));
+            my_sprites.add (new AppleSprite(pick_random_light()));
         }
 
   // ----- clear_lights() ----------------------------------------------
@@ -460,7 +452,7 @@ public class SnakeController extends SpriteController
     private void find_adjacent_lights (int ix, int iy, int iz,
                                         Sprite self)
         {
-        findAdjacentLights (ix, iy, iz, lights, self);
+        findAdjacentLights (ix, iy, iz, lights, self, adjacent_lights);
         }
 
   // ----- pick_random_light() -------------------------------------------
@@ -479,8 +471,8 @@ public class SnakeController extends SpriteController
     public boolean step (int time)
         {
       // Step each sprite and check that it is alive after its step.
-      // When an Apple is no longer alive (i.e., it's been eaten by
-      // a snake, create a new one.  Snakes can die if they no longer
+      // When an AppleSprite is no longer alive (i.e., it's been eaten
+      // by a snake, create a new one.  Snakes can die if they no longer
       // can find a valid move.  For example, the head gets trapped
       // in a corner.  It this case, create a new snake.  A snake
       // may also become the victim of another snake.  When this
@@ -509,13 +501,12 @@ public class SnakeController extends SpriteController
                       { dead_snake.explode (new_sprites, lights);
                         exploding = true;
                         start_explosion = true;
-//                        dead_snake.clear();
                         }
                     new_sprites.add (dead_snake_color);
                     t_new = 0;
                     }
-                  else if (sprite instanceof Apple)
-                  { new_sprites.add (new Apple(pick_random_light()));
+                  else if (sprite instanceof AppleSprite)
+                  { new_sprites.add (new AppleSprite(pick_random_light()));
                     }
                   else if (sprite instanceof StarBurstSprite)
                   { --burst_count;
@@ -589,62 +580,12 @@ public class SnakeController extends SpriteController
                     }
                 }
             }
-
         
         increment_step();
-
         return true;
         }
     }
 
-  //-------------------------------------------------------------------
-  // inner class Snake
-  //
-    class Apple extends Sprite
-        {
-        private int t_next, cycle;
-        private static final int MY_DT = 33;
-
-        private static final Color[]  COLOR_RAMP = new Color[30];
-        static
-          { int istart = 0, iend = COLOR_RAMP.length / 2;
-            for (int i=istart; i<iend; i++)
-                COLOR_RAMP[i]
-                    = new Color (1.0f, 0.8f*i/(iend-istart), 0.8f*i/(iend-istart));
-            istart = iend;
-            iend = COLOR_RAMP.length;
-            for (int i=istart; i<iend; i++)
-                COLOR_RAMP[i]
-                    = new Color (1.0f, 0.8f*(iend-i-1)/(iend-istart),
-                                        0.8f*(iend-i-1)/(iend-istart));
-            }
-
-        Light my_light;
-
-        public Apple (Light light)
-            {
-            my_light = light;
-            my_light.setState (Color.RED, true);
-            cycle = LSUtils.pickNumber (0, COLOR_RAMP.length-1);
-            t_next = 0;
-            }
-
-        @Override
-        public boolean hasLight (Light l)   { return l == my_light; }
-
-        @Override
-        public boolean step (int time)
-            {
-            if (time > t_next)
-              { t_next = time + MY_DT;
-                cycle = ++cycle % COLOR_RAMP.length;
-                alive = my_light.color != Color.BLACK;
-                if (alive)
-                    my_light.color = COLOR_RAMP[cycle];
-                }
-            return alive;
-            }
-        }
 
 
 //*************************************************************************
