@@ -82,6 +82,9 @@ public class LightSim implements ActionListener
             LeanExec leanExec = new LeanExec(exec, my_light_arrays);
             leanExec.setController(new ShootingStarController());
             leanExec.start();  // Starts running LeanExec on the executor.
+            
+            Server server = new Server(leanExec);
+            server.start();
         }
     }
 
