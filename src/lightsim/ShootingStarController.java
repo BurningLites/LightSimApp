@@ -102,7 +102,15 @@ public class ShootingStarController extends LightController {
             double intensity = 0.1 + t * 0.9;  // intensity ranges from 0.1 to 1.
             // double intensity = 1.0;
  
-           
+            /*
+            double upperLight = Math.ceil(starHeight);
+            double[] positions = new double[trailLength];
+            double[] intensities = new double[trailLength];
+            for (int i = 0; i < trailLength; ++i) {
+              positions[i] = upperLight - trailLength + i;
+              intensities[i] = Math.min(1.0, intensity * (1 - (positions[i] - starHeight)));
+            }
+            */
             double lowerLight = Math.floor(starHeight);
             double upperLight = Math.ceil(starHeight);
             
@@ -111,17 +119,37 @@ public class ShootingStarController extends LightController {
             double lowerIntensity = intensity * (1 - (starHeight - lowerLight));
             double upperIntensity = intensity * (1 - (upperLight - starHeight));
 
-            String ts = new DecimalFormat("0.000").format(t);
-
+            /*
             Console.log(
                 "time " + formatLogDouble(t) +
                 // " lh " + Math.floor(starHeight) +
                 // " uh " + Math.ceil(starHeight) +
-                " lh " +  (int)lowerLight +
-                " uh " + (int)upperLight +
+                " lh " +  (int) positions[0] +
+                " uh " + (int) positions[trailLength - 1] +
+                " li " + formatLogDouble(intensities[0]) +
+                " ui " + formatLogDouble(intensities[trailLength - 1])
+            );
+*/
+            Console.log(
+                "time " + formatLogDouble(t) +
+                " starHeight " + formatLogDouble(starHeight) +
+                " intensity " + formatLogDouble(intensity) +
+                " lh " + Math.floor(starHeight) +
+                " uh " + Math.ceil(starHeight) +
+                //" lh " +  (int) positions[0] +
+                //" uh " + (int) positions[trailLength - 1] +
                 " li " + formatLogDouble(lowerIntensity) +
                 " ui " + formatLogDouble(upperIntensity)
             );
+
+ 
+            /*
+            for (int i = 0; i < trailLength; ++i) {
+                if (positions[i] >= 0 && positions[i] < 10) {
+                   addIntensityToLight(strings[columnIndex][9 - (int)positions[i]], intensities[i]);                
+                }
+            }
+*/
             
             // Now write to the lights.
             if (lowerLight >= 0 && lowerLight < 10) {
@@ -140,17 +168,17 @@ public class ShootingStarController extends LightController {
             return (int) Math.round(x * (1.0 - p) + y * p);
         }
         private Color interpolateColors(Color x, Color y, double p) {
-            return new Color(
+            Color c = new Color(
                 interpolateInts(x.getRed(), y.getRed(), p),
                 interpolateInts(x.getGreen(), y.getGreen(), p),
-                interpolateInts(x.getBlue(), y.getBlue(), p));                
+                interpolateInts(x.getBlue(), y.getBlue(), p));
+            return c;
         }
 
         private void addIntensityToLight(Light light, double intensity) {
             Color currentColor = light.getColor();
             Color newColor = interpolateColors(currentColor, starColor, intensity);
-            Console.log("interpolate: orig " +
-                currentColor.toString() + " target " + starColor.toString() + " interp " + newColor.toString());
+            //Console.log("interpolate: orig " + currentColor.toString() + " target " + starColor.toString() + " interp " + newColor.toString());
             light.setColor(newColor);
         }
     }
