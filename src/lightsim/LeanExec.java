@@ -1,5 +1,6 @@
 package lightsim;
 
+import java.util.ArrayList;
 import java.util.concurrent.*;
 
 public class LeanExec implements Runnable {
@@ -9,9 +10,9 @@ public class LeanExec implements Runnable {
     LightArray lights;
     AnimationClock clock;
     SpiWriter spiWriter;
+    ArrayList<ExecListener> listeners;
     
-    // Current step number.
-    int step;
+    boolean isRunning;
     
     LightController controller;
     
@@ -26,14 +27,37 @@ public class LeanExec implements Runnable {
     }
     
     public void start() {
-        step = 0;
+        if (isRunning) {
+            return;
+        }
+        isRunning = true;
+        
+        executor = new ScheduledThreadPoolExecutor(1);
         
         long updateIntervalMicros = (long)(1e6 / FRAMERATE_HZ);
         executor.scheduleAtFixedRate(this, 0, updateIntervalMicros, TimeUnit.MICROSECONDS);
     }
     
     public void stop() {
-        // TODO
+        if (!isRunning) {
+            return;
+        }
+        isRunning = false;
+        executor.shutdown();
+    }
+    
+    public void reset() {
+        clock.reset();
+    }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
+    public void addListener(ExecListener listener) {
+        if (!stateListeners.contains(listener)) {
+            stateListeners.add(listener);
+        }
     }
     
     public void setController(LightController controller) {
@@ -50,10 +74,13 @@ public class LeanExec implements Runnable {
         if (controller != null) {
             controller.step((int)(clock.getCurrentTime() * 1000));
         }
-        step++;
         
         if (spiWriter != null) {
             spiWriter.writeLights(lights);
+        }
+        
+        for (ExecListener listener : listeners) {
+            listener.newFrameReady();
         }
     }
 }

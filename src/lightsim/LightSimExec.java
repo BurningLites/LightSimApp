@@ -31,7 +31,8 @@ public class LightSimExec implements ActionListener, Runnable
     LightController my_light_controller;
     LightSim        my_light_sim;
     LightSimToolbar my_toolbar;
-    
+    ArrayList<ExecListener> state_listeners;
+
     Thread  sim_thread;
     boolean paused, running, stepping;
     int step0;
@@ -80,6 +81,11 @@ public class LightSimExec implements ActionListener, Runnable
             stepping = false;
             }
         }
+    
+    public void setAnimate(boolean animate) { 
+        this.animate = animate;
+    }
+    
     public void setToolbar (LightSimToolbar toolbar)
         { my_toolbar = toolbar; }
 
@@ -99,10 +105,12 @@ public class LightSimExec implements ActionListener, Runnable
 
   // ----- pause() ---------------------------------------------------
   //
-    public void pause()
-        {
+    public void pause() {
         running = false;
-        }
+        try {
+            sim_thread.join();
+        } catch (InterruptedException ie) {}
+    }
 
   // ----- report_load() ---------------------------------------------
   //
@@ -197,10 +205,10 @@ public class LightSimExec implements ActionListener, Runnable
             }
         reset();
 
-        if (saved_running)
-          { my_toolbar.setToolbarState(saved_paused ? "pause" : "run");
+        if (saved_running) {
+            my_toolbar.setToolbarState(saved_paused ? "pause" : "run");
             runLights (!saved_paused);
-            }
+        }
         running = saved_running;
         paused = saved_paused;
         }
@@ -212,40 +220,6 @@ public class LightSimExec implements ActionListener, Runnable
         clock += dclock;
         time = (int) (1000.0*clock + 0.5);
         my_toolbar.setTimeField (time);     
-        }
-    
-  // ========== support for ActionListener ============================
-  //
-    public void actionPerformed (ActionEvent event)
-        {
-        String command = event.getActionCommand();
-
-        switch (command)
-            {
-            case "animate":
-                JCheckBox chkbx = (JCheckBox) event.getSource();
-                animate = chkbx.isSelected();
-                break;
-
-            case "pause":
-                paused = true;
-                try { sim_thread.join(); }
-                  catch (InterruptedException ie)  {}
-                break;
-
-            case "reset":
-                reset();
-                break;
-
-            case "run":
-                runLights (true);
-                break;
-
-            case "step":
-                step();
-                my_toolbar.setToolbarState ("pause");
-                break;
-            }
         }
     
   // ========== Runnable support =====================================

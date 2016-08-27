@@ -20,19 +20,18 @@ import javax.swing.*;
 // class LightSimWindow
 //======================================================================
 
-public class LightSimWindow extends JFrame
-    {
-    private LightSim my_light_sim;
+public class LightSimWindow extends JFrame implements ExecListener {
+    private LeanExec lightSimExec;
 
     private LightSimToolbar  my_toolbar;
     private LightViewer my_light_viewer;
 
   // ----- constructor ------------------------------------------------
   //
-    LightSimWindow (LightSim light_sim, LightArray light_arrays)
-        {
+    LightSimWindow (LeanExec lightSimExec, LightArray light_arrays) {
         super ("Light Simulation");
-        my_light_sim = light_sim;
+        this.lightSimExec = lightSimExec;
+        lightSimExec.addListener(this);
 
         Container content = getContentPane();
         content.setLayout (new BorderLayout());
@@ -47,18 +46,16 @@ public class LightSimWindow extends JFrame
                      LightSim.prefs.getInt ("LightSim_window_y", 100));
         
         addComponentListener (new ComponentAdapter() {
-            public void componentMoved (ComponentEvent e)
-                {
+            public void componentMoved (ComponentEvent e) {
                 LightSim.prefs.putInt ("LightSim_window_x", getX());
                 LightSim.prefs.putInt ("LightSim_window_y", getY());
-                }
-            public void componentResized (ComponentEvent e)
-                {
+            }
+            public void componentResized (ComponentEvent e) {
                 LightSim.prefs.putInt ("LightSim_window_width", getWidth());
                 LightSim.prefs.putInt ("LightSim_window_height", getHeight());
                 update(getGraphics());
-                }
-            });
+            }
+        });
 
       // Check that the window is on screen given the current set of
       // screen devices.  If not, reset the bounds to their default
@@ -69,16 +66,15 @@ public class LightSimWindow extends JFrame
         GraphicsEnvironment 
                 genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
         boolean on_screen = false;
-        for (GraphicsDevice gdev : genv.getScreenDevices())
-            {
+        for (GraphicsDevice gdev : genv.getScreenDevices()) {
             GraphicsConfiguration gconfig = gdev.getDefaultConfiguration();
             if (gconfig.getBounds().contains(window_bounds))
                 on_screen = true;
-            }
+        }
         if (!on_screen)
             setBounds (100,100, 600,400);
 
-        my_toolbar = new LightSimToolbar (my_light_sim.getLightSimExec());
+        my_toolbar = new LightSimToolbar(lightSimExec);
         content.add (my_toolbar, BorderLayout.NORTH);
         my_light_viewer = new LightViewer (light_arrays);
         content.add (my_light_viewer, BorderLayout.CENTER);     
@@ -86,12 +82,21 @@ public class LightSimWindow extends JFrame
         addWindowListener (new WindowAdapter() {
             public void windowClosing (WindowEvent e)
                 { System.exit(0); }
-            });
+        });
 
         setVisible (true);
         my_light_viewer.init();
-        }
     }
+
+    @Override
+    public void execStateChanged(boolean running) {
+    }
+    
+    @Override
+    public void newFrameReady() {
+        repaint();
+    }
+}
 
 //*************************************************************************
 //

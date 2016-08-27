@@ -100,20 +100,17 @@ public class LightSimToolbar extends JPanel
     private JTextField  step_txtfld, time_txtfld;
     private JCheckBox   animation_chkbx;
     
-    LightSimExec    my_exec;
+    LeanExec    my_exec;
 
   // ----- constructor ------------------------------------------------
   //
-    public LightSimToolbar (LightSimExec exec)
-        {
+    public LightSimToolbar (LeanExec exec) {
         super();
         my_exec = exec;
-        my_exec.setToolbar (this);
         init();
-        }
+    }
 
-    private void init()
-    {
+    private void init() {
         setLayout (new FlowLayout(FlowLayout.LEFT));
 
       // Create a toolbar to hold everything.
@@ -161,7 +158,7 @@ public class LightSimToolbar extends JPanel
 
         run_toolbar.add (new JLabel("Frame rate:"));
         frame_rate_cbx = new JComboBox (FrameRate.values());
-        frame_rate_cbx.setSelectedItem (FrameRate.FR_30);
+        frame_rate_cbx.setSelectedItem (FrameRate.FR_60);
         frame_rate_cbx.addItemListener (this);
         run_toolbar.add (frame_rate_cbx);
 
@@ -184,34 +181,32 @@ public class LightSimToolbar extends JPanel
         animation_chkbx = new JCheckBox ("Animation");
         animation_chkbx.setActionCommand ("animate");
         animation_chkbx.setSelected (true);
-        animation_chkbx.addActionListener (my_exec);
+        animation_chkbx.addActionListener(this);
         run_toolbar.add (animation_chkbx);
 
         add (run_toolbar);
-        }
+    }
 
   // ----- addController() --------------------------------------------
   //
-    public void addController (LightController controller)
-        {
+    public void addController (LightController controller) {
         controller_cbx.addItem (controller);
         int n_controllers = controller_cbx.getItemCount();
         if (n_controllers > controller_cbx.getMaximumRowCount())
             controller_cbx.setMaximumRowCount (n_controllers);
-        }
+    }
 
   // ----- create_button() --------------------------------------------
   //
     private JButton create_button (ImageIcon icon, String action_command,
-                                String tool_tip_text)
-        {
+                                String tool_tip_text) {
         JButton button = new JButton (icon);
         button.setActionCommand (action_command);
         button.addActionListener (this);
         button.setToolTipText (tool_tip_text);
 
         return button;
-        }
+    }
 
   // ----- enableControls() -------------------------------------------
   //
@@ -321,13 +316,36 @@ public class LightSimToolbar extends JPanel
 
   // ========== support for ActionListener ============================
   //
-    public void actionPerformed (ActionEvent event)
-        {
+    public void actionPerformed (ActionEvent event) {
         String  command = event.getActionCommand();
         setToolbarState (command);
-        my_exec.actionPerformed (
-                new ActionEvent (event.getSource(),
-                                    event.getID(), command));
+
+        switch (command)
+            {
+            case "animate":
+                // TODO(kbongort): not sure what to do here.
+//                JCheckBox checkBox = (JCheckBox)event.getSource();
+//                my_exec.setAnimate(checkBox.isSelected());
+                break;
+
+            case "pause":
+                my_exec.stop();
+                break;
+
+            case "reset":
+                my_exec.reset();
+                break;
+
+            case "run":
+                my_exec.start();
+                break;
+
+            case "step":
+                // TODO(kbongort): I guess stop, and then increment time by some delta?
+//                my_exec.step();
+                setToolbarState("pause");
+                break;
+            }
         }
 
   // ========== support for ItemListener ==============================
@@ -344,7 +362,8 @@ public class LightSimToolbar extends JPanel
         if (    src == frame_rate_cbx
              && event.getStateChange() == ItemEvent.SELECTED)
             {
-            my_exec.setFrameRate (getFrameRate());
+              // TODO(kbongort): Probably remove framerate control.
+//            my_exec.setFrameRate (getFrameRate());
             }
         if (src == controller_cbx && event.getStateChange() == ItemEvent.SELECTED)
             {
