@@ -9,7 +9,7 @@ import lightsim.LightArray.Light;
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
     static final double STAR_FREQUENCY = 10;
-    static final double STAR_DURATION = 2;
+    static final double STAR_DURATION = 20;
     static final double INTENSITY_MULTIPLIER = 200;
     
     static Color bgColor = new Color(0, 0, 100);
@@ -97,6 +97,48 @@ public class ShootingStarController extends LightController {
             this.columnIndex = columnIndex;
         }
         
+        private double getLightIntensity(int pos, double t) {
+            t = t * STAR_DURATION;
+            double stretch = 0.3;
+            int fadeDuration = 8;
+            
+            double heightFactor = 0.05 + (pos - 1) * 0.1;
+            double maxIntensity = 0.1 + (heightFactor * 0.9);
+            
+            double startTime = (pos * stretch);
+            double peakTime =  ((pos + 1) * stretch);
+            double fadedTime = ((pos + 1 + fadeDuration) * stretch);
+            
+            // fade in:  0 -> 1s
+            // fade out: 1 -> 3s
+            double intensity = 0.0;
+            String state = "";
+            if ((t < startTime) || (t > fadedTime)) {
+                intensity = 0.0;
+            } else if (startTime <= t && t < peakTime) {
+                // Console.log("  " + pos + " pre-peak");
+                state = "pre-peak";
+                intensity = maxIntensity - ((peakTime - t) / stretch * maxIntensity);
+            } else if (peakTime <= t && t < fadedTime) {
+                // Console.log("  " + pos + " fading");
+                state = "fading";
+                intensity = ((fadedTime - t) / (fadeDuration * stretch) * maxIntensity);
+            }
+            
+            if (intensity > 0) {
+            Console.log(
+                "time " + formatLogDouble(t) +
+                " pos " + pos +
+                " maxIntensity " + formatLogDouble(maxIntensity) +
+                " s " + formatLogDouble(startTime) +
+                " e " + formatLogDouble(fadedTime) +
+                " intensity " + formatLogDouble(intensity) +
+                    " " + state
+            );
+            }
+            return intensity;
+        }
+        
         public void update(double t) {
             double starHeight = 10 * t - 0.5;  // starHeight ranges from -0.5 to 9.5
             double intensity = 0.1 + t * 0.9;  // intensity ranges from 0.1 to 1.
@@ -130,6 +172,7 @@ public class ShootingStarController extends LightController {
                 " ui " + formatLogDouble(intensities[trailLength - 1])
             );
 */
+            /*
             Console.log(
                 "time " + formatLogDouble(t) +
                 " starHeight " + formatLogDouble(starHeight) +
@@ -141,6 +184,7 @@ public class ShootingStarController extends LightController {
                 " li " + formatLogDouble(lowerIntensity) +
                 " ui " + formatLogDouble(upperIntensity)
             );
+            */
 
  
             /*
@@ -153,10 +197,13 @@ public class ShootingStarController extends LightController {
             
             // Now write to the lights.
             if (lowerLight >= 0 && lowerLight < 10) {
-                addIntensityToLight(strings[columnIndex][9 - (int)lowerLight], lowerIntensity);
+                //addIntensityToLight(strings[columnIndex][9 - (int)lowerLight], lowerIntensity);
             }
             if (upperLight >=0 && upperLight < 10) {
-                addIntensityToLight(strings[columnIndex][9 - (int)upperLight], upperIntensity);
+                //addIntensityToLight(strings[columnIndex][9 - (int)upperLight], upperIntensity);
+            }
+            for (int i = 0; i < 10; ++i) {
+                addIntensityToLight(strings[columnIndex][9 - i], getLightIntensity(i, t));
             }
         }
         
