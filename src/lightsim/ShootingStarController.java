@@ -9,11 +9,12 @@ import lightsim.LightArray.Light;
 
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
-    static final double STAR_FREQUENCY = 5;
+    static final double STAR_FREQUENCY = 2;
     static final double STAR_DURATION = 20;
     
     static Color bgColor = new Color(0, 0, 100);
     static Color starColor = new Color(255, 255, 0);
+    
 
     //static Color bgColor = new Color(0, 0, 0);
     //static Color starColor = new Color(255, 255, 255);
@@ -110,6 +111,7 @@ public class ShootingStarController extends LightController {
         double stretch;
         int fadeDuration;
         int posOffset;
+        Color varColor;
         
         public StarAnimation(int columnIndex) {
             Random r = new Random();
@@ -118,6 +120,17 @@ public class ShootingStarController extends LightController {
             this.fadeDuration = 4 + (r.nextInt(4));
             // this.posOffset = 0 - (r.nextInt(5));
             this.posOffset = 0;
+            
+            // this.varColor = new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255));
+            float colorBucket = random.nextFloat(); // 1/3 chance of white, yellow, orange
+            if (colorBucket <= 0.33) {
+              this.varColor = new Color(255, 255, 255);
+            } else if (colorBucket <= 0.67) {
+              this.varColor = new Color(255, 255, 0);
+            } else {
+              this.varColor = new Color(255, 230, 60);
+            }
+
             Console.log("added string " + columnIndex + 
                 " stretch " + stretch +
                 " fadeDuration " + fadeDuration +
@@ -208,7 +221,8 @@ public class ShootingStarController extends LightController {
 
         private void addIntensityToLight(Light light, double intensity) {
             Color currentColor = light.getColor();
-            Color newColor = interpolateColors(currentColor, starColor, intensity);
+            // Color newColor = interpolateColors(currentColor, starColor, intensity);
+            Color newColor = interpolateColors(currentColor, varColor, intensity);
             /*
             Console.log("interpolate: orig " + currentColor.toString() +
                 " target " + starColor.toString() +
