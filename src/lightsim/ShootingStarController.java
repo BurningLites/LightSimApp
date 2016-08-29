@@ -3,12 +3,13 @@ package lightsim;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import lightsim.LightArray.Light;
 
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
-    static final double STAR_FREQUENCY = 10;
+    static final double STAR_FREQUENCY = 5;
     static final double STAR_DURATION = 20;
     static final double INTENSITY_MULTIPLIER = 200;
     
@@ -50,7 +51,7 @@ public class ShootingStarController extends LightController {
         // Randomly add some star animations.
         double dt = timeSeconds - lastStepTime;
         lastStepTime = timeSeconds;
-        addNewStars(dt, timeSeconds);
+        //addNewStars(dt, timeSeconds);
         updateAnimations(timeSeconds);
         return true;
     }
@@ -90,17 +91,44 @@ public class ShootingStarController extends LightController {
     
     public class StarAnimation extends Animation {
     
-        int columnIndex = 0;
+        int columnIndex = 0;       
         int trailLength = 2;
+        double stretch;
+        int fadeDuration;
+        
+        HashMap stretches;
+        HashMap fadeDurations;            
     
         public StarAnimation(int columnIndex) {
             this.columnIndex = columnIndex;
+            this.stretches = new HashMap();
+            Random r = new Random();
+            this.stretch = 0.3 + (r.nextDouble() * 0.5);
+            this.fadeDuration = 8 + (r.nextInt(5));
         }
         
         private double getLightIntensity(int pos, double t) {
             t = t * STAR_DURATION;
-            double stretch = 0.3;
-            int fadeDuration = 8;
+            
+            Random r = new Random();
+
+            /*
+            Double dStretch = (Double) stretches.get(pos);
+            if (dStretch == null) {
+              double newStretch = 0.3 + (r.nextDouble() * 0.5);
+              dStretch = new Double(newStretch);
+              stretches.put(pos, dStretch);            
+            }
+            double stretch = dStretch.doubleValue();
+            
+            Integer iFadeDuration = (Integer) fadeDurations.get(pos);
+            if (iFadeDuration == null) {
+              int newFadeDuration = 8 + (r.nextInt(5));
+              iFadeDuration = new Integer(newFadeDuration);
+              fadeDurations.put(pos, iFadeDuration);
+            }
+            int fadeDuration = iFadeDuration.intValue();
+            */
             
             double heightFactor = 0.05 + (pos - 1) * 0.1;
             double maxIntensity = 0.1 + (heightFactor * 0.9);
@@ -120,12 +148,13 @@ public class ShootingStarController extends LightController {
                 state = "pre-peak";
                 intensity = maxIntensity - ((peakTime - t) / stretch * maxIntensity);
             } else if (peakTime <= t && t < fadedTime) {
+                // intensity = 0;
                 // Console.log("  " + pos + " fading");
                 state = "fading";
                 intensity = ((fadedTime - t) / (fadeDuration * stretch) * maxIntensity);
             }
             
-            if (intensity > 0) {
+            if (intensity > 0 && pos == 5) {
             Console.log(
                 "time " + formatLogDouble(t) +
                 " pos " + pos +
