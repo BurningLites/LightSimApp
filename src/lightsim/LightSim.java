@@ -13,6 +13,7 @@
 package lightsim;
 
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 
@@ -20,16 +21,17 @@ import java.util.prefs.Preferences;
 // class LightSim
 //======================================================================
 
-public class LightSim implements ActionListener
+public class LightSim
     {
     static LightSim     light_sim;
     static public Preferences   prefs;
     
     private LightSimWindow  my_window;
-    private LightSimExec    my_sim_exec;
+    private LeanExec    my_sim_exec;
     private LightArray      my_light_arrays;
     private boolean enable_gui;
 
+    private ArrayList<LightController> controllers;
   // ----- main() ----------------------------------------------------
   //
   /**
@@ -57,48 +59,34 @@ public class LightSim implements ActionListener
   //
     public void init() {
         my_light_arrays = new LightArray();
+        
+        controllers = new ArrayList<>();
+        controllers.add(new SimpleSnakesController());
+        controllers.add(new SnakeController());
+        controllers.add(new ColorCubeController());
+        controllers.add(new DiamondController());
+        controllers.add(new GameOfLifeController());
+        controllers.add(new HelloWorldController());
+        controllers.add(new PulseController());
+        controllers.add(new ShootingStarController());
+        controllers.add(new SpiralController());
+        controllers.add(new StringIDsController());
+        controllers.add(new TimesSquareController());
+        controllers.add(new StarBurstController());
+        
         if (enable_gui) {
-            my_sim_exec = new LightSimExec (this, my_light_arrays);
-            my_window = new LightSimWindow (this, my_light_arrays);
-
-            my_sim_exec.addController (new SimpleSnakesController());
-            my_sim_exec.addController (new SnakeController());
-            my_sim_exec.addController (new ColorCubeController());
-            my_sim_exec.addController (new DiamondController());
-            my_sim_exec.addController (new GameOfLifeController());
-            my_sim_exec.addController (new HelloWorldController());
-            my_sim_exec.addController (new PulseController());
-            my_sim_exec.addController (new ShootingStarController());
-            my_sim_exec.addController (new SpiralController());
-            my_sim_exec.addController (new StringIDsController());
-            my_sim_exec.addController (new TimesSquareController());
-            my_sim_exec.addController (new StarBurstController());
+            my_sim_exec = new LeanExec(my_light_arrays);
+            my_window = new LightSimWindow(controllers, my_sim_exec, my_light_arrays);
         } else {
-            // Not really *just* GUI disabled; really a totally different mode
-            // of execution based on a ScheduleThreadPoolExecutor providing a
-            // run loop.
-
             LeanExec leanExec = new LeanExec(my_light_arrays);
             leanExec.setController(new ShootingStarController());
             leanExec.start();  // Starts running LeanExec on the executor.
-            
+
             Server server = new Server(leanExec);
             server.start();
         }
     }
-
-  // ----- access/convenience methods ---------------------------------
-  //
-    public LightSimExec getLightSimExec()   { return my_sim_exec; }
-    public void update()    { my_window.repaint(); }
-
-  // ========== ActionListener support ================================
-  //
-    public void actionPerformed (ActionEvent e)
-        {
-
-        }
-    }
+}
 
 //*************************************************************************
 //

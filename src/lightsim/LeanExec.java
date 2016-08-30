@@ -16,10 +16,12 @@ public class LeanExec implements Runnable {
     
     LightController controller;
     
-    public LeanExec(ScheduledExecutorService executor, LightArray lights) {
-        this.executor = executor;
+    public LeanExec(LightArray lights) {
+        
         this.lights = lights;
+        
         clock = new AnimationClock();
+        listeners = new ArrayList<>();
         spiWriter = SpiWriter.getWriter();
         if (spiWriter == null) {
             Console.log("Couldn't get writer. :(");
@@ -47,7 +49,10 @@ public class LeanExec implements Runnable {
     }
     
     public void reset() {
+        stop();
         clock.reset();
+        controller.init(lights);
+        notifyNewFrame();
     }
     
     public boolean isRunning() {
@@ -55,8 +60,8 @@ public class LeanExec implements Runnable {
     }
     
     public void addListener(ExecListener listener) {
-        if (!stateListeners.contains(listener)) {
-            stateListeners.add(listener);
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
         }
     }
     
@@ -79,6 +84,10 @@ public class LeanExec implements Runnable {
             spiWriter.writeLights(lights);
         }
         
+        notifyNewFrame();
+    }
+    
+    private void notifyNewFrame() {
         for (ExecListener listener : listeners) {
             listener.newFrameReady();
         }

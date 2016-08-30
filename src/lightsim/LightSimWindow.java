@@ -14,6 +14,7 @@ package lightsim;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.*;
 
 //======================================================================
@@ -28,7 +29,7 @@ public class LightSimWindow extends JFrame implements ExecListener {
 
   // ----- constructor ------------------------------------------------
   //
-    LightSimWindow (LeanExec lightSimExec, LightArray light_arrays) {
+    LightSimWindow (ArrayList<LightController> controllers, LeanExec lightSimExec, LightArray light_arrays) {
         super ("Light Simulation");
         this.lightSimExec = lightSimExec;
         lightSimExec.addListener(this);
@@ -74,7 +75,7 @@ public class LightSimWindow extends JFrame implements ExecListener {
         if (!on_screen)
             setBounds (100,100, 600,400);
 
-        my_toolbar = new LightSimToolbar(lightSimExec);
+        my_toolbar = new LightSimToolbar(controllers, lightSimExec);
         content.add (my_toolbar, BorderLayout.NORTH);
         my_light_viewer = new LightViewer (light_arrays);
         content.add (my_light_viewer, BorderLayout.CENTER);     

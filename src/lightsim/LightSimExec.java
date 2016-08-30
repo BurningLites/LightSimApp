@@ -24,8 +24,7 @@ import lightsim.LightArray.Light;
 /**
  * This class loads and runs light control plug-ins.  
  */
-public class LightSimExec implements ActionListener, Runnable
-    {
+public class LightSimExec implements Runnable {
     LightArray      my_light_array;
     ArrayList<Light>  my_lights;
     LightController my_light_controller;
@@ -40,7 +39,6 @@ public class LightSimExec implements ActionListener, Runnable
     double clock, dclock;
     int frame_rate;
     double speed_factor;
-    boolean animate;
 
   // ----- constructor ------------------------------------------------
   //
@@ -50,7 +48,6 @@ public class LightSimExec implements ActionListener, Runnable
         my_light_array = light_arrays;
         my_lights = my_light_array.getLights();
 
-        animate = true;
         dt = 1000;
         }
 
@@ -80,20 +77,6 @@ public class LightSimExec implements ActionListener, Runnable
           { paused = true;
             stepping = false;
             }
-        }
-    
-    public void setAnimate(boolean animate) { 
-        this.animate = animate;
-    }
-    
-    public void setToolbar (LightSimToolbar toolbar)
-        { my_toolbar = toolbar; }
-
-  // ----- addController() -------------------------------------------
-  //
-    public void addController (LightController controller)
-        {
-        my_toolbar.addController (controller);
         }
 
   // ----- loadPlugIn() ----------------------------------------------
@@ -126,7 +109,6 @@ public class LightSimExec implements ActionListener, Runnable
         running = false;
         paused = false;
         my_light_array.reset();
-        my_light_sim.update();
         my_toolbar.setToolbarState ("reset");
         my_toolbar.enableControls (true);
         my_toolbar.setStepField (-1);
@@ -224,6 +206,7 @@ public class LightSimExec implements ActionListener, Runnable
     
   // ========== Runnable support =====================================
   //
+    @Override
     public void run()
         {
         while (running && !paused)
@@ -232,8 +215,6 @@ public class LightSimExec implements ActionListener, Runnable
 
             my_light_controller.step (time);
             my_light_controller.setLights (time);
-            if (animate)
-                my_light_sim.update();
 
             long t_end = System.currentTimeMillis();
             double load = (t_end - t_begin) / dt;

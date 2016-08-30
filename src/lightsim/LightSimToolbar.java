@@ -14,6 +14,7 @@ package lightsim;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.*;
 import java.util.logging.*;
 
@@ -100,12 +101,14 @@ public class LightSimToolbar extends JPanel
     private JTextField  step_txtfld, time_txtfld;
     private JCheckBox   animation_chkbx;
     
+    ArrayList<LightController> controllers;
     LeanExec    my_exec;
 
   // ----- constructor ------------------------------------------------
   //
-    public LightSimToolbar (LeanExec exec) {
+    public LightSimToolbar(ArrayList<LightController> controllers, LeanExec exec) {
         super();
+        this.controllers = controllers;
         my_exec = exec;
         init();
     }
@@ -144,6 +147,11 @@ public class LightSimToolbar extends JPanel
         
         controller_cbx = new JComboBox();
         controller_cbx.addItemListener (this);
+        controller_cbx.setMaximumRowCount(controllers.size());
+        for (LightController controller : controllers) {
+            controller_cbx.addItem (controller);
+        }
+        
         run_toolbar.add (controller_cbx);
 
         run_toolbar.add (new JLabel(" step:"));
@@ -185,15 +193,6 @@ public class LightSimToolbar extends JPanel
         run_toolbar.add (animation_chkbx);
 
         add (run_toolbar);
-    }
-
-  // ----- addController() --------------------------------------------
-  //
-    public void addController (LightController controller) {
-        controller_cbx.addItem (controller);
-        int n_controllers = controller_cbx.getItemCount();
-        if (n_controllers > controller_cbx.getMaximumRowCount())
-            controller_cbx.setMaximumRowCount (n_controllers);
     }
 
   // ----- create_button() --------------------------------------------
@@ -316,6 +315,7 @@ public class LightSimToolbar extends JPanel
 
   // ========== support for ActionListener ============================
   //
+    @Override
     public void actionPerformed (ActionEvent event) {
         String  command = event.getActionCommand();
         setToolbarState (command);
@@ -350,29 +350,26 @@ public class LightSimToolbar extends JPanel
 
   // ========== support for ItemListener ==============================
   //
+    @Override
     public void itemStateChanged (ItemEvent event)
         {
         Object src = event.getSource();
         
-        if (    src == speed_cbx
-             && event.getStateChange() == ItemEvent.SELECTED);
-            {
+        if (src == speed_cbx &&
+                event.getStateChange() == ItemEvent.SELECTED) {
             my_exec.setSpeed (getSpeed());
-            }
-        if (    src == frame_rate_cbx
-             && event.getStateChange() == ItemEvent.SELECTED)
-            {
-              // TODO(kbongort): Probably remove framerate control.
-//            my_exec.setFrameRate (getFrameRate());
-            }
-        if (src == controller_cbx && event.getStateChange() == ItemEvent.SELECTED)
-            {
+        } else if (src == frame_rate_cbx &&
+                event.getStateChange() == ItemEvent.SELECTED) {
+            // TODO(kbongort): Probably remove framerate control.
+            // my_exec.setFrameRate (getFrameRate());
+        } else if (src == controller_cbx &&
+                event.getStateChange() == ItemEvent.SELECTED) {
             log.info("toolbar event: " + event.getSource());
-            my_exec.switchController();
-            }
+                my_exec.setController(getSelectedController());
         }
-    
     }
+    
+}
 
 //*************************************************************************
 //
