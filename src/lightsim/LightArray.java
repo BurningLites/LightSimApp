@@ -52,6 +52,11 @@ public class LightArray
             this.on = light.on;
             this.color = light.color;
             }
+        public void setState (Color _color, boolean _on)
+            {
+            color = _color;
+            on = _on;
+            }
 
         public boolean isOn() {
             return on;
@@ -171,17 +176,87 @@ public class LightArray
     public Light[][][] getRightLights() { return right_lights; }
     public Light[][] getStrings() { return strings; }
 
-  // ----- fill -------------------------------------------------
+  // ----- fill() ----------------------------------------------------
   //
     public void fill (Color color)
+        {
+        fill (color, true);
+        }
+    public void fill (Color color, boolean on)
         {
         for (Light l : my_lights)
             {
             l.color = color;
-            l.on = true;
+            l.on = on;
             }
         }
 
+  // ----- fillXPlane() -----------------------------------------------
+  //
+    public void fillXPlane (int x_idx, Light[][][] lights, Color color)
+        {
+        fillXPlane (x_idx, lights, color, true);
+        }
+
+    public void fillXPlane (int x_idx, Light[][][] lights,
+                            Color color, boolean on)
+        {
+        if (x_idx < 0 || lights.length <= x_idx)
+            return;
+        int ny = lights[0].length;
+        int nz = lights[0][0].length;
+        for (int iy=0; iy<ny; iy++)
+            for (int iz=0; iz<nz; iz++)
+              { Light l = lights[x_idx][iy][iz];
+                l.setColor (color);
+                l.on = on;
+                }
+        }
+    
+  // ----- fillYPlane() -----------------------------------------------
+  //
+    public void fillYPlane (int y_idx, Light[][][] lights, Color color)
+        {
+        fillYPlane (y_idx, lights, color, true);
+        }
+
+    public void fillYPlane (int y_idx, Light[][][] lights,
+                            Color color, boolean on)
+        {
+        if (y_idx < 0 || lights[0].length <= y_idx)
+            return;
+        int nx = lights.length;
+        int nz = lights[0][0].length;
+        for (int ix=0; ix<nx; ix++)
+            for (int iz=0; iz<nz; iz++)
+              { Light l = lights[ix][y_idx][iz];
+                l.setColor (color);
+                l.on = on;
+                }
+        }
+    
+  // ----- fillZPlane() -----------------------------------------------
+  //
+    public void fillZPlane (int z_idx, Light[][][] lights, Color color)
+        {
+        fillYPlane (z_idx, lights, color, true);
+        }
+
+    public void fillZPlane (int z_idx, Light[][][] lights,
+                            Color color, boolean on)
+        {
+        if (z_idx < 0 || lights[0][0].length <= z_idx)
+            return;
+        int nx = lights.length;
+        int ny = lights[0].length;
+        for (int ix=0; ix<nx; ix++)
+            for (int iy=0; iy<ny; iy++)
+              { Light l = lights[ix][iy][z_idx];
+                l.setColor (color);
+                l.on = on;
+                }
+        }
+    
   // ----- get_temp_light() -------------------------------------------
   //
     private Light get_temp_light()
@@ -210,6 +285,7 @@ public class LightArray
         }
 
   // ----- releaseTemps() ---------------------------------------------
+  //
     public void releaseTemps()
         {
         for (Object obj : temp_objects)
@@ -539,7 +615,7 @@ public class LightArray
         releaseTemps();
         }
 
-  // ----- shiftAlongXAxis() ------------------------------------------
+  // ----- shiftAlongZAxis() ------------------------------------------
   //
   // Shift the light states along the x-axis with wrap around.
   //
@@ -591,6 +667,149 @@ public class LightArray
         releaseTemps();
         }
 
+  // ----- shiftOutAlongXAxis() ---------------------------------------
+  //
+  // Shift the light states along the x-axis, and fill behind the shift
+  // with lights that are black and turned off.
+  //
+    public void shiftOutAlongXAxis (int shift, Light lights[][][])
+        {
+        if (!shift_check (shift, 0, lights))  return;
+
+        int nx = lights.length;
+        int ny = lights[0].length;
+        int nz = lights[0][0].length;
+        if (nx < 2)  return;
+
+        int x_src, x_dest;
+        int nxm1 = nx - 1;
+
+      // Set up the source and destination indices.
+      //
+        if (shift == -1)
+          { x_src = 1;
+            x_dest = 0;
+            }
+          else
+          { x_src = nxm1 - 1;
+            x_dest = nxm1;
+            }
+
+      // Shift the light states.
+      //
+        for (int i=0; i<nxm1; i++)
+          { for (int iy=0; iy<ny; iy++)
+                for (int iz=0; iz<nz; iz++)
+                    lights[x_dest][iy][iz].setState (lights[x_src][iy][iz]);
+            x_src -= shift;
+            x_dest -= shift;
+            }
+
+      // Set final plane of lights from the saved values.
+      //
+        if (shift == -1)
+          { fillXPlane (nxm1, lights, Color.BLACK, false);
+            }
+          else
+          { fillXPlane (0, lights, Color.BLACK, false);
+            }
+        }
+
+  // ----- shiftOutAlongXAxis() ---------------------------------------
+  //
+  // Shift the light states along the x-axis, and fill behind the shift
+  // with lights that are black and turned off.
+  //
+    public void shiftOutAlongYAxis (int shift, Light lights[][][])
+        {
+        if (!shift_check (shift, 0, lights))  return;
+
+        int nx = lights.length;
+        int ny = lights[0].length;
+        int nz = lights[0][0].length;
+        if (nx < 2)  return;
+
+        int y_src, y_dest;
+        int nym1 = ny - 1;
+
+      // Set up the source and destination indices.
+      //
+        if (shift == -1)
+          { y_src = 1;
+            y_dest = 0;
+            }
+          else
+          { y_src = nym1 - 1;
+            y_dest = nym1;
+            }
+
+      // Shift the light states.
+      //
+        for (int i=0; i<nym1; i++)
+          { for (int ix=0; ix<nx; ix++)
+                for (int iz=0; iz<nz; iz++)
+                    lights[ix][y_dest][iz].setState (lights[ix][y_src][iz]);
+            y_src -= shift;
+            y_dest -= shift;
+            }
+
+      // Set final plane of lights from the saved values.
+      //
+        if (shift == -1)
+          { fillYPlane (nym1, lights, Color.BLACK, false);
+            }
+          else
+          { fillYPlane (0, lights, Color.BLACK, false);
+            }
+        }
+
+  // ----- shiftOutAlongZAxis() ---------------------------------------
+  //
+  // Shift the light states along the x-axis, and fill behind the shift
+  // with lights that are black and turned off.
+  //
+    public void shiftOutAlongZAxis (int shift, Light lights[][][])
+        {
+        if (!shift_check (shift, 0, lights))  return;
+
+        int nx = lights.length;
+        int ny = lights[0].length;
+        int nz = lights[0][0].length;
+        if (nx < 2)  return;
+
+        int z_src, z_dest;
+        int nzm1 = nz - 1;
+
+      // Set up the source and destination indices.
+      //
+        if (shift == -1)
+          { z_src = 1;
+            z_dest = 0;
+            }
+          else
+          { z_src = nzm1 - 1;
+            z_dest = nzm1;
+            }
+
+      // Shift the light states.
+      //
+        for (int i=0; i<nzm1; i++)
+          { for (int ix=0; ix<nx; ix++)
+                for (int iy=0; iy<nz; iy++)
+                    lights[ix][iy][z_dest].setState (lights[ix][iy][z_src]);
+            z_src -= shift;
+            z_dest -= shift;
+            }
+
+      // Set final plane of lights from the saved values.
+      //
+        if (shift == -1)
+          { fillZPlane (nzm1, lights, Color.BLACK, false);
+            }
+          else
+          { fillZPlane (0, lights, Color.BLACK, false);
+            }
+        }
 
     }
 

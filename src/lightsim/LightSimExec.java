@@ -24,14 +24,14 @@ import lightsim.LightArray.Light;
 /**
  * This class loads and runs light control plug-ins.  
  */
-public class LightSimExec implements ActionListener, Runnable
-    {
+public class LightSimExec implements Runnable {
     LightArray      my_light_array;
     ArrayList<Light>  my_lights;
     LightController my_light_controller;
     LightSim        my_light_sim;
     LightSimToolbar my_toolbar;
-    
+    ArrayList<ExecListener> state_listeners;
+
     Thread  sim_thread;
     boolean paused, running, stepping;
     int step0;
@@ -39,7 +39,6 @@ public class LightSimExec implements ActionListener, Runnable
     double clock, dclock;
     int frame_rate;
     double speed_factor;
-    boolean animate;
 
   // ----- constructor ------------------------------------------------
   //
@@ -49,7 +48,6 @@ public class LightSimExec implements ActionListener, Runnable
         my_light_array = light_arrays;
         my_lights = my_light_array.getLights();
 
-        animate = true;
         dt = 1000;
         }
 
@@ -80,15 +78,6 @@ public class LightSimExec implements ActionListener, Runnable
             stepping = false;
             }
         }
-    public void setToolbar (LightSimToolbar toolbar)
-        { my_toolbar = toolbar; }
-
-  // ----- addController() -------------------------------------------
-  //
-    public void addController (LightController controller)
-        {
-        my_toolbar.addController (controller);
-        }
 
   // ----- loadPlugIn() ----------------------------------------------
   //
@@ -99,10 +88,12 @@ public class LightSimExec implements ActionListener, Runnable
 
   // ----- pause() ---------------------------------------------------
   //
-    public void pause()
-        {
+    public void pause() {
         running = false;
-        }
+        try {
+            sim_thread.join();
+        } catch (InterruptedException ie) {}
+    }
 
   // ----- report_load() ---------------------------------------------
   //
@@ -118,7 +109,6 @@ public class LightSimExec implements ActionListener, Runnable
         running = false;
         paused = false;
         my_light_array.reset();
-        my_light_sim.update();
         my_toolbar.setToolbarState ("reset");
         my_toolbar.enableControls (true);
         my_toolbar.setStepField (-1);
@@ -197,10 +187,10 @@ public class LightSimExec implements ActionListener, Runnable
             }
         reset();
 
-        if (saved_running)
-          { my_toolbar.setToolbarState(saved_paused ? "pause" : "run");
+        if (saved_running) {
+            my_toolbar.setToolbarState(saved_paused ? "pause" : "run");
             runLights (!saved_paused);
-            }
+        }
         running = saved_running;
         paused = saved_paused;
         }
@@ -214,42 +204,9 @@ public class LightSimExec implements ActionListener, Runnable
         my_toolbar.setTimeField (time);     
         }
     
-  // ========== support for ActionListener ============================
-  //
-    public void actionPerformed (ActionEvent event)
-        {
-        String command = event.getActionCommand();
-
-        switch (command)
-            {
-            case "animate":
-                JCheckBox chkbx = (JCheckBox) event.getSource();
-                animate = chkbx.isSelected();
-                break;
-
-            case "pause":
-                paused = true;
-                try { sim_thread.join(); }
-                  catch (InterruptedException ie)  {}
-                break;
-
-            case "reset":
-                reset();
-                break;
-
-            case "run":
-                runLights (true);
-                break;
-
-            case "step":
-                step();
-                my_toolbar.setToolbarState ("pause");
-                break;
-            }
-        }
-    
   // ========== Runnable support =====================================
   //
+    @Override
     public void run()
         {
         while (running && !paused)
@@ -258,8 +215,6 @@ public class LightSimExec implements ActionListener, Runnable
 
             my_light_controller.step (time);
             my_light_controller.setLights (time);
-            if (animate)
-                my_light_sim.update();
 
             long t_end = System.currentTimeMillis();
             double load = (t_end - t_begin) / dt;

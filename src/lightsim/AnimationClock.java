@@ -34,6 +34,11 @@ public class AnimationClock {
     public double getSpeed() {
         return speed;
     }
+
+    public void reset() {
+        currentAbstractTimeSeconds = 0;
+        lastWallclockTimeSeconds = System.currentTimeMillis() / 1e3;
+    }
     
     /**
      * Updates the abstract time based on elapsed wallclock time and the

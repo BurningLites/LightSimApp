@@ -1,24 +1,27 @@
 package lightsim;
 
+import java.util.ArrayList;
 import java.util.concurrent.*;
 
 public class LeanExec implements Runnable {
-    static final int FRAMERATE_HZ = 60;
+    static final double FRAMERATE_HZ = 60;
 
     ScheduledExecutorService executor;
     LightArray lights;
     AnimationClock clock;
     SpiWriter spiWriter;
+    ArrayList<ExecListener> listeners;
     
-    // Current step number.
-    int step;
+    boolean isRunning;
     
     LightController controller;
     
-    public LeanExec(ScheduledExecutorService executor, LightArray lights) {
-        this.executor = executor;
+    public LeanExec(LightArray lights) {
+        
         this.lights = lights;
+        
         clock = new AnimationClock();
+        listeners = new ArrayList<>();
         spiWriter = SpiWriter.getWriter();
         if (spiWriter == null) {
             Console.log("Couldn't get writer. :(");
@@ -26,14 +29,40 @@ public class LeanExec implements Runnable {
     }
     
     public void start() {
-        step = 0;
+        if (isRunning) {
+            return;
+        }
+        isRunning = true;
+        
+        executor = new ScheduledThreadPoolExecutor(1);
         
         long updateIntervalMicros = (long)(1e6 / FRAMERATE_HZ);
         executor.scheduleAtFixedRate(this, 0, updateIntervalMicros, TimeUnit.MICROSECONDS);
     }
     
     public void stop() {
-        // TODO
+        if (!isRunning) {
+            return;
+        }
+        isRunning = false;
+        executor.shutdown();
+    }
+    
+    public void reset() {
+        stop();
+        clock.reset();
+        controller.init(lights);
+        notifyNewFrame();
+    }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
+    public void addListener(ExecListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
     }
     
     public void setController(LightController controller) {
@@ -50,10 +79,17 @@ public class LeanExec implements Runnable {
         if (controller != null) {
             controller.step((int)(clock.getCurrentTime() * 1000));
         }
-        step++;
         
         if (spiWriter != null) {
             spiWriter.writeLights(lights);
+        }
+        
+        notifyNewFrame();
+    }
+    
+    private void notifyNewFrame() {
+        for (ExecListener listener : listeners) {
+            listener.newFrameReady();
         }
     }
 }

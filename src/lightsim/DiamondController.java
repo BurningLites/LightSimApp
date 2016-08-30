@@ -12,7 +12,6 @@
 
 package lightsim;
 
-import java.awt.Color;
 import lightsim.LightArray.Light;
 
 //======================================================================
@@ -56,10 +55,11 @@ public class DiamondController extends LightController
         };
     
     Light[][][] left_lights, right_lights;
+    BC_Color  left_color, right_color;
     int iy, iyp1, nx, ny, nz;
 
     int t_next;
-    static final int MY_DT = 33;
+    static final int MY_DT = 100;
 
   // ----- init() -----------------------------------------------------
   //
@@ -80,19 +80,9 @@ public class DiamondController extends LightController
 
         my_light_array.reset();
 
-        Color color = Color.GREEN;
-        set_y_layer (left_lights[2], DIAMOND[2], color);
-        set_y_layer (left_lights[1], DIAMOND[1], color);
-        set_y_layer (left_lights[3], DIAMOND[3], color);
-        set_y_layer (left_lights[0], DIAMOND[0], color);
-        set_y_layer (left_lights[4], DIAMOND[4], color);
-
-        color = Color.MAGENTA;
-        set_y_layer (right_lights[2], DIAMOND[2], color);
-        set_y_layer (right_lights[1], DIAMOND[1], color);
-        set_y_layer (right_lights[3], DIAMOND[3], color);
-        set_y_layer (right_lights[0], DIAMOND[0], color);
-        set_y_layer (right_lights[4], DIAMOND[4], color);
+        left_color = pickBrightColor();
+        right_color = pickBrightColor();
+        set_colors();
 
         iy = 0;
         iyp1 = 1;
@@ -102,6 +92,14 @@ public class DiamondController extends LightController
   // ----- name() -----------------------------------------------------
   //
     public String name()    { return "Diamonds"; }
+    
+    private void set_colors()
+        {
+        for (int iy=0; iy<5; iy++)
+          { set_y_layer (left_lights[iy], DIAMOND[iy], left_color);
+            set_y_layer (right_lights[iy], DIAMOND[iy], right_color);
+            }
+        }
 
   // ----- step() -----------------------------------------------------
   //
@@ -110,6 +108,12 @@ public class DiamondController extends LightController
         if (clock >= t_next)
             {
             int next_y = (my_step + 5) % ny;
+            if (next_y == 5)
+              {
+                left_color = pickAdjacentColor (left_color);
+                right_color = pickAdjacentColor (right_color);
+                set_colors();
+              }
             for (int i=0; i<5; i++)
                 {
                 int ym1 = next_y - 1;
