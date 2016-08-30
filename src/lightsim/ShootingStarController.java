@@ -9,16 +9,12 @@ import lightsim.LightArray.Light;
 
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
-    static final double STAR_FREQUENCY = 2;
+    static final double STAR_FREQUENCY = 4;
     static final double STAR_DURATION = 20;
     
     static Color bgColor = new Color(0, 0, 100);
     static Color starColor = new Color(255, 255, 0);
-    
-
-    //static Color bgColor = new Color(0, 0, 0);
-    //static Color starColor = new Color(255, 255, 255);
-    
+        
     LightArray.Light strings[][];
     LightArray lightArray;
     ArrayList<StarAnimation> animations;
@@ -108,16 +104,18 @@ public class ShootingStarController extends LightController {
     
         double intensityBase = 0.3;
         int columnIndex = 0;
-        double stretch;
-        int fadeDuration;
+        double timeSlice;
+        int fadeInSlices;
+        int fadeOutSlices;
         int posOffset;
         Color varColor;
         
         public StarAnimation(int columnIndex) {
             Random r = new Random();
             this.columnIndex = columnIndex;
-            this.stretch = 0.2 + (r.nextDouble() * 0.4);
-            this.fadeDuration = 4 + (r.nextInt(4));
+            this.timeSlice = (0.2 + (r.nextDouble() * 0.4)) / 3.0;
+            this.fadeInSlices = 1 + (r.nextInt(8));
+            this.fadeOutSlices = 4 + (r.nextInt(4));
             // this.posOffset = 0 - (r.nextInt(5));
             this.posOffset = 0;
             
@@ -132,8 +130,9 @@ public class ShootingStarController extends LightController {
             }
 
             Console.log("added string " + columnIndex + 
-                " stretch " + stretch +
-                " fadeDuration " + fadeDuration +
+                " timeSlice " + timeSlice +
+                " fadeIn " + fadeInSlices +
+                " fadeOut " + fadeOutSlices +
                 " offset " + posOffset);
         }
         public int getColumnIndex() {
@@ -146,9 +145,9 @@ public class ShootingStarController extends LightController {
             double heightFactor = 0.05 + (pos - 1) * 0.1;
             double maxIntensity = intensityBase + (heightFactor * (1.0 - intensityBase));
             
-            double startTime = (pos * stretch);
-            double peakTime =  ((pos + 1) * stretch);
-            double fadedTime = ((pos + 1 + fadeDuration) * stretch);
+            double startTime = (pos * timeSlice);
+            double peakTime =  ((pos + fadeInSlices) * timeSlice);
+            double fadedTime = ((pos + fadeInSlices + fadeOutSlices) * timeSlice);
                      
             // e.g. fade in:  0 -> 1s
             // e.g. fade out: 1 -> 3s
@@ -158,10 +157,10 @@ public class ShootingStarController extends LightController {
                 intensity = 0.0;
             } else if (startTime <= t && t < peakTime) {
                 state = "pre-peak";
-                intensity = maxIntensity - ((peakTime - t) / stretch * maxIntensity);
+                intensity = maxIntensity - ((peakTime - t) / (fadeInSlices * timeSlice) * maxIntensity);
             } else if (peakTime <= t && t < fadedTime) {
                 state = "fading";
-                intensity = ((fadedTime - t) / (fadeDuration * stretch) * maxIntensity);
+                intensity = ((fadedTime - t) / (fadeOutSlices * timeSlice) * maxIntensity);
             }
             intensity = Math.min(intensity, 1.0);
             
@@ -180,7 +179,7 @@ public class ShootingStarController extends LightController {
         }
         
         public boolean isFinished(double t) {
-          return (t - this.startTimeSeconds) > (10 + fadeDuration) * stretch;
+          return (t - this.startTimeSeconds) > (10 * (fadeInSlices + fadeOutSlices) * timeSlice);
         }
         
         public void update(double t) {
@@ -221,14 +220,13 @@ public class ShootingStarController extends LightController {
 
         private void addIntensityToLight(Light light, double intensity) {
             Color currentColor = light.getColor();
-            // Color newColor = interpolateColors(currentColor, starColor, intensity);
             Color newColor = interpolateColors(currentColor, varColor, intensity);
             /*
             Console.log("interpolate: orig " + currentColor.toString() +
                 " target " + starColor.toString() +
                 " interp " + newColor.toString() +
                 " p " + intensity);
-*/
+            */
             light.setColor(newColor);
         }
     }
