@@ -166,30 +166,22 @@ public class LightViewer extends JPanel
     
   // ----- paint() ------------------------------------------------------
   //
-    public void paint (Graphics g)
-        {
+    public void paint (Graphics g) {
         g.setColor (Color.DARK_GRAY);
         g.fillRect (0,0, getWidth(),getHeight());
-        if (zlights != null)
-            {
+        if (zlights != null) {
             int xc = getWidth() / 2;
             int yc = getHeight() / 2;
-            for (Light l : zlights)
-                {
+            for (Light l : zlights) {
                 int x = (int) (xc + scale*l.xt + 0.5);
                 int y = (int) (yc - scale*l.yt + 0.5);  // invert y sense
                 
-                if (l.on)
-                  { g.setColor (l.color);
-                    g.fillOval (x-4, y-4, 9,9);
-                    }
-                  else
-                  { g.setColor (Color.LIGHT_GRAY);
-                    g.fillRect (x,y, 3,3);
-                    }
-                }
+                Color color = l.on ? l.color : Color.black;
+                g.setColor (color);
+                g.fillOval (x-4, y-4, 9,9);
             }
         }
+    }
 
   // ========== KeyListener support ==================================
   //    

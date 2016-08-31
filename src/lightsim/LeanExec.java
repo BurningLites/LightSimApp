@@ -77,7 +77,11 @@ public class LeanExec implements Runnable {
     @Override
     public void run() {
         if (controller != null) {
-            controller.step((int)(clock.getCurrentTime() * 1000));
+            try {
+                controller.step((int)(clock.getCurrentTime() * 1000));
+            } catch (Exception ex) {
+                Console.log("Caught exception from controller step: " + ex);
+            }
         }
         
         if (spiWriter != null) {

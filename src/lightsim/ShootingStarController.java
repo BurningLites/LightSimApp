@@ -17,7 +17,6 @@ public class ShootingStarController extends LightController {
         
     LightArray.Light strings[][];
     LightArray lightArray;
-    ArrayList<StarAnimation> animations;
     HashMap activeStrings;
     Random random;
     
@@ -27,7 +26,6 @@ public class ShootingStarController extends LightController {
         this.lightArray = light_array;
         strings = light_array.getStrings();
         random = new Random();
-        animations = new ArrayList<>();
         activeStrings = new HashMap();
         createAnimation(0, 0); 
     }
@@ -55,13 +53,12 @@ public class ShootingStarController extends LightController {
         StarAnimation animation = new StarAnimation(string);
         animation.setDuration(STAR_DURATION);
         animation.start(startTime);
-        animations.add(animation);
+        addAnimation(animation);
         activeStrings.put(string, Boolean.TRUE);
 
     }
     
     private void addNewStars(double dt, double time) {
-        int numActive = animations.size();
         double targetStarsToAdd = dt * STAR_FREQUENCY;
         
         // Calculate how many stars to add. For fractional stars, roll a random
@@ -77,26 +74,6 @@ public class ShootingStarController extends LightController {
             if (!(isActive.equals(Boolean.TRUE))) {
                 createAnimation(stringNum, time);
             }
-        }
-    }
-    
-    private void updateAnimations(double time) {
-        ArrayList<StarAnimation> animationsToRemove = new ArrayList<>();
-        for (StarAnimation animation : animations) {
-            animation.tick(time);
-            if (animation.isFinished(time)) {
-                Console.log("removing string " + animation.getColumnIndex());
-                animationsToRemove.add(animation);
-                activeStrings.put(animation.getColumnIndex(), Boolean.FALSE);
-            }
-        }
-        animations.removeAll(animationsToRemove);
-    }
-    
-    private void clearLights() {
-        for (Light light : lightArray.getLights()) {
-            light.on = true;
-            light.color = bgColor;
         }
     }
     
@@ -135,6 +112,7 @@ public class ShootingStarController extends LightController {
                 " fadeOut " + fadeOutSlices +
                 " offset " + posOffset);
         }
+     
         public int getColumnIndex() {
             return this.columnIndex;
         }
@@ -197,6 +175,11 @@ public class ShootingStarController extends LightController {
                   addIntensityToLight(strings[columnIndex][9 - i + posOffset], getLightIntensity(i, t));
                 }
             }
+        }
+        
+        public void onComplete() {
+            Console.log("removing string " + columnIndex);
+            activeStrings.put(columnIndex, Boolean.FALSE);
         }
         
         private String formatLogDouble(double f) {
