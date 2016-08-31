@@ -15,6 +15,7 @@ package lightsim;
 import java.awt.Color;
 import java.util.ArrayList;
 import lightsim.LightArray.Light;
+import static lightsim.ShootingStarController.bgColor;
 
 //======================================================================
 // abstract class LightController
@@ -87,21 +88,23 @@ public abstract class LightController
     protected LightSimExec  my_exec;
     protected LightArray    my_light_array;
     protected int           my_step;
+    
+    private ArrayList<Animation> animations;
 
   // ----- access methods ---------------------------------------------
   //
-    public int getStep()    { return my_step; }
+    public int getStep() { return my_step; }
         
     public void setExec (LightSimExec exec)     { my_exec = exec; }
     public void setLights (int time)  {}
         
   // ----- LightController API methods --------------------------------
   //
-    public void init (LightArray light_array)
-        {
+    public void init (LightArray light_array) {
         my_light_array = light_array;
         my_step = 0;
-        }
+        animations = new ArrayList<>();
+    }
     abstract public String name();
     abstract public boolean step (int time);
 
@@ -241,40 +244,62 @@ public abstract class LightController
   //        pick_number (0, 1)
   // returns 0 or 1, each with a probably of 0.5.
   //
-    protected int pick_number (int lwrbnd, int uprbnd)
-        {
+    protected int pick_number (int lwrbnd, int uprbnd) {
         double pick = (uprbnd - lwrbnd + 1) * Math.random();
         int ipick = (int) pick;
         return lwrbnd + ipick;
-        }
+    }
 
   // ----- set_y_layer() -------------------------------------------
   //
-    protected void set_y_layer (Light layer[][], byte pattern[],
-                                Color color)
-        {
-        for (int ix=0; ix<5; ix++)
-            {
+    protected void set_y_layer (Light layer[][],
+                                byte pattern[],
+                                Color color) {
+        for (int ix=0; ix<5; ix++) {
             int mask = 0b10000;
             int row_pattern = pattern[ix];
-            for (int iz=0; iz<5; iz++)
-                {
+            for (int iz=0; iz<5; iz++) {
                 Light l = layer[ix][iz];
-                if ((mask & row_pattern) !=  0)
-                    {
+                if ((mask & row_pattern) !=  0) {
                     l.on = true;
                     l.color = color;
-                    }
-                  else
-                    {
+                } else {
                     l.on = false;
                     l.color = Color.LIGHT_GRAY;
-                    }
-                mask = mask >>> 1;
                 }
+                mask = mask >>> 1;
             }
         }
     }
+
+    protected void clearLights() {
+        for (Light light : my_light_array.getLights()) {
+            light.on = true;
+            light.color = bgColor;
+        }
+    }
+    
+    protected void addAnimation(Animation animation) {
+        animations.add(animation);
+    }
+    
+    protected void removeAnimation(Animation animation) {
+        animation.onComplete();
+        animations.remove(animation);
+    }
+    
+    protected void updateAnimations(double time) {
+        ArrayList<Animation> animationsToRemove = new ArrayList<>();
+        for (Animation animation : animations) {
+            boolean isFinished = !animation.tick(time);
+            if (isFinished) {
+                animation.onComplete();
+                animationsToRemove.add(animation);
+            }
+        }
+        animations.removeAll(animationsToRemove);
+    }
+}
 
 //*************************************************************************
 //

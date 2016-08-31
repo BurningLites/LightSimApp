@@ -44,7 +44,7 @@ public class Animation {
         this.startTimeSeconds = startTimeSeconds;
     }
     
-    public boolean tick(double clockTime) {
+    public final boolean tick(double clockTime) {
         double dt = clockTime - startTimeSeconds;
         if (dt > duration) {
             return false;
@@ -60,5 +60,10 @@ public class Animation {
     public void update(double t) {
     }
     
+    /**
+     * Called when the animation completes.
+     */
+    public void onComplete() {
+    }
     
 }

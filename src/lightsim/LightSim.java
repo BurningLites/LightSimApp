@@ -73,6 +73,7 @@ public class LightSim
         controllers.add(new StringIDsController());
         controllers.add(new TimesSquareController());
         controllers.add(new StarBurstController());
+        controllers.add(new SparklesController());
         
         if (enable_gui) {
             my_sim_exec = new LeanExec(my_light_arrays);

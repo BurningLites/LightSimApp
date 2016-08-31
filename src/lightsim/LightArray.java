@@ -59,7 +59,7 @@ public class LightArray
             }
 
         public boolean isOn() {
-            return on;
+            return true;
         }
         
         public void setColor (Color value)  {
