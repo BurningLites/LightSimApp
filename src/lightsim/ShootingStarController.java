@@ -9,10 +9,10 @@ import lightsim.LightArray.Light;
 
 public class ShootingStarController extends LightController {
     // Average frequency of star generation, in stars/second.
-    static final double STAR_FREQUENCY = 4;
+    static final double STAR_FREQUENCY = 6;
     static final double STAR_DURATION = 20;
     
-    static Color bgColor = new Color(0, 0, 100);
+    static Color bgColor = new Color(0, 0, 0);
     static Color starColor = new Color(255, 255, 0);
         
     LightArray.Light strings[][];
@@ -51,7 +51,7 @@ public class ShootingStarController extends LightController {
     }
     
     private void createAnimation(int string, double startTime) {
-        Console.log("starting string " + string);
+        // Console.log("starting string " + string);
         StarAnimation animation = new StarAnimation(string);
         animation.setDuration(STAR_DURATION);
         animation.start(startTime);
@@ -73,7 +73,7 @@ public class ShootingStarController extends LightController {
             int stringNum = random.nextInt(50);
             
             Boolean isActive = (Boolean) activeStrings.getOrDefault(stringNum, Boolean.FALSE);
-            Console.log("string " + stringNum + " isActive " + isActive.booleanValue());
+            // Console.log("string " + stringNum + " isActive " + isActive.booleanValue());
             if (!(isActive.equals(Boolean.TRUE))) {
                 createAnimation(stringNum, time);
             }
@@ -85,7 +85,7 @@ public class ShootingStarController extends LightController {
         for (StarAnimation animation : animations) {
             animation.tick(time);
             if (animation.isFinished(time)) {
-                Console.log("removing string " + animation.getColumnIndex());
+                // Console.log("removing string " + animation.getColumnIndex());
                 animationsToRemove.add(animation);
                 activeStrings.put(animation.getColumnIndex(), Boolean.FALSE);
             }
@@ -129,11 +129,11 @@ public class ShootingStarController extends LightController {
               this.varColor = new Color(255, 230, 60);
             }
 
-            Console.log("added string " + columnIndex + 
-                " timeSlice " + timeSlice +
-                " fadeIn " + fadeInSlices +
-                " fadeOut " + fadeOutSlices +
-                " offset " + posOffset);
+            // Console.log("added string " + columnIndex + 
+            //     " timeSlice " + timeSlice +
+            //     " fadeIn " + fadeInSlices +
+            //     " fadeOut " + fadeOutSlices +
+            //     " offset " + posOffset);
         }
         public int getColumnIndex() {
             return this.columnIndex;

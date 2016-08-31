@@ -22,7 +22,7 @@ import lightsim.LightArray.Light;
 
 public class TimesSquareController extends LightController
     {
-    private static final String HELLO_WORLD = "HELLO WORLD! Hello World! ";
+    private static final String HELLO_WORLD = "WELCOME HOME! ";
     
     private Light[][] lights;
     private LSFont my_font;

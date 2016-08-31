@@ -28,7 +28,7 @@ import lightsim.LightArray.Light;
 
 public class HelloWorldController extends LightController
     {
-    private static final String HELLO_WORLD = "Hello World ! ";
+    private static final String HELLO_WORLD = "Welcome Home ! ";
 
     Light[][][]  lights;
     int nx, nxm1, ny, nz;
