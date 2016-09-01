@@ -16,7 +16,6 @@ public class SparklesController extends LightController {
     
     double sparklesToAdd = 0;
     double lastStepTime = 0;
-    Random random;
     
     double colorWheelPos = 0;  // Position on color wheel in [0..1)
     double colorWheelDuration = 60;  // Seconds to progress through full wheel
@@ -25,7 +24,6 @@ public class SparklesController extends LightController {
     Animation animations[] = new Animation[500];
     
     public SparklesController() {
-        random = new Random();
     }
     
     @Override
@@ -39,13 +37,12 @@ public class SparklesController extends LightController {
     }
     
     @Override
-    public boolean step(int time) {
+    public boolean step(double time) {
         clearLights();
         
         // Timekeeping
-        double timeSeconds = (double)time / 1e3;
-        double dt = timeSeconds - lastStepTime;
-        lastStepTime = timeSeconds;
+        double dt = time - lastStepTime;
+        lastStepTime = time;
         
         // How many sparkles should we add?
         double targetNumSparkles = SPARKLE_RATE * dt;
@@ -82,7 +79,7 @@ public class SparklesController extends LightController {
             
             Animation anim = new SparkleAnimation(lightIndex, colorWheel(colorIndex));
             anim.setDuration(duration);
-            anim.start(timeSeconds);
+            anim.start(time);
             
             if (animations[lightIndex] != null) {
                 removeAnimation(animations[lightIndex]);
@@ -93,13 +90,11 @@ public class SparklesController extends LightController {
             sparklesToAdd -= 1;
         }
 
-        updateAnimations(timeSeconds);
+        updateAnimations(time);
         return true;
     }
     
-    private double randomDoubleInRange(double min, double max) {
-        return min + (random.nextDouble() * (max - min));
-    }
+    
     
     // Returns a color from a rainbow wheel.
     private Color colorWheel(int i) {

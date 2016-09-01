@@ -23,6 +23,7 @@ public class ShootingStarController extends LightController {
     double lastStepTime = 0;
     
     public void init(LightArray light_array) {
+        super.init(light_array);
         this.lightArray = light_array;
         strings = light_array.getStrings();
         random = new Random();
@@ -36,15 +37,14 @@ public class ShootingStarController extends LightController {
     }
     
     @Override
-    public boolean step(int time) {
+    public boolean step(double time) {
         clearLights();
         
-        double timeSeconds = (double)time / 1e3;
         // Randomly add some star animations.
-        double dt = timeSeconds - lastStepTime;
-        lastStepTime = timeSeconds;
-        addNewStars(dt, timeSeconds);
-        updateAnimations(timeSeconds);
+        double dt = time - lastStepTime;
+        lastStepTime = time;
+        addNewStars(dt, time);
+        updateAnimations(time);
         return true;
     }
     

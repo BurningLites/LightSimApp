@@ -14,6 +14,7 @@ package lightsim;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Random;
 import lightsim.LightArray.Light;
 import static lightsim.ShootingStarController.bgColor;
 
@@ -85,6 +86,8 @@ public abstract class LightController
                   }
         }
     
+    protected static Random random = new Random();
+    
     protected LightSimExec  my_exec;
     protected LightArray    my_light_array;
     protected int           my_step;
@@ -106,7 +109,16 @@ public abstract class LightController
         animations = new ArrayList<>();
     }
     abstract public String name();
-    abstract public boolean step (int time);
+
+    // Step with time in millis. Not necessary to call super in override.
+    public boolean step(int time) { 
+        return true;
+    }
+    
+    // Step with time in seconds. Not necessary to call super in override.
+    public boolean step(double time) {
+        return step((int)(time * 1000));
+    }
 
   // ----- toString() -------------------------------------------------
   //
@@ -298,6 +310,19 @@ public abstract class LightController
             }
         }
         animations.removeAll(animationsToRemove);
+    }
+    
+    protected static double randomDoubleInRange(double min, double max) {
+        return min + (random.nextDouble() * (max - min));
+    }
+    
+    protected static double clamp(double val, double min, double max) {
+        if (val < min) {
+            val = min;
+        } else if (val > max) {
+            val = max;
+        }
+        return val;
     }
 }
 

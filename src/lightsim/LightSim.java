@@ -74,13 +74,14 @@ public class LightSim
         controllers.add(new TimesSquareController());
         controllers.add(new StarBurstController());
         controllers.add(new SparklesController());
+        controllers.add(new WaveController());
         
         if (enable_gui) {
             my_sim_exec = new LeanExec(my_light_arrays);
             my_window = new LightSimWindow(controllers, my_sim_exec, my_light_arrays);
         } else {
             LeanExec leanExec = new LeanExec(my_light_arrays);
-            leanExec.setController(new ShootingStarController());
+            leanExec.setController(new WaveController());
             leanExec.start();  // Starts running LeanExec on the executor.
 
             Server server = new Server(leanExec);

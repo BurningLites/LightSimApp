@@ -78,7 +78,7 @@ public class LeanExec implements Runnable {
     public void run() {
         if (controller != null) {
             try {
-                controller.step((int)(clock.getCurrentTime() * 1000));
+                controller.step(clock.getCurrentTime());
             } catch (Exception ex) {
                 Console.log("Caught exception from controller step: " + ex);
             }

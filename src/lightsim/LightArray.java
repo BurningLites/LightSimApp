@@ -41,6 +41,9 @@ public class LightArray
             }
         public Light (double _x, double _y, double _z, Color _color)
             {
+            if (x > 16) {
+                Console.log("wtf");
+            }
             x = _x;
             y = _y;
             z = _z;
@@ -101,7 +104,7 @@ public class LightArray
             new Color (205,205,205), new Color(230,230,230),
             Color.WHITE
         };
-    private static final int DIMENSIONS[] = { 16, 9, 4 };
+    public static final int DIMENSIONS[] = { 16, 9, 4 };
     private static final int ALL_DIMENSIONS[] = { 10, 10, 5 };
     private static final int LEFT_DIMENSIONS[] = { 5, 10, 5 };
     private static final int RIGHT_DIMENSIONS[] = { 5, 10, 5 };
@@ -138,12 +141,9 @@ public class LightArray
                                 [RIGHT_DIMENSIONS[2]];
         strings = new Light[50][10];
         
-        for (int ix=0; ix<5; ix++)
-            {
-            for (int iy=0; iy<10; iy++)
-                {
-                for (int iz=0; iz<5; iz++)
-                    {
+        for (int ix=0; ix<5; ix++) {
+            for (int iy=0; iy<10; iy++) {
+                for (int iz=0; iz<5; iz++) {
                     Light l = new Light (ix,iy,iz, whites[iz]);
                     l.setIndices (ix,iy,iz);
                     my_lights.add (l);
@@ -157,10 +157,35 @@ public class LightArray
                     all_lights[ix+5][iy][iz] = l;
                     right_lights[ix][iy][iz] = l;
                     strings[25 + ix + 5 * iz][9 - iy] = l;
-                    }
                 }
             }
         }
+
+        Bounds x_bnds, y_bnds, z_bnds;
+        
+        x_bnds = new Bounds();
+        y_bnds = new Bounds();
+        z_bnds = new Bounds();
+        
+        for (Light l : my_lights)
+            {
+            x_bnds.adjust (l.x);
+            y_bnds.adjust (l.y);
+            z_bnds.adjust (l.z);
+            }
+
+        // Center the light arrays.  The viewer moves around this
+        // center.
+        //
+        double xc = x_bnds.center();
+        double yc = y_bnds.center();
+        double zc = z_bnds.center();
+        for (Light l : my_lights) {
+            l.x = l.x - xc;
+            l.y = l.y - yc;
+            l.z = l.z - zc;
+        }
+    }
 
   // ----- access methods ---------------------------------------
   //

@@ -24,19 +24,7 @@ import lightsim.LightArray.Light;
 //======================================================================
 
 public class LightViewer extends JPanel
-            implements KeyListener, MouseListener, MouseMotionListener
-    {
-    class Bounds
-        {
-        double min=Double.MAX_VALUE, max=Double.MIN_VALUE;
-        public void adjust (double value)
-            {
-            if (value < min)    min = value;
-            if (value > max)    max = value;
-            }
-        public double center()  { return (max + min) / 2.0; }
-        public double length()  { return max - min; }
-        }
+            implements KeyListener, MouseListener, MouseMotionListener {
 
     private LightArray my_light_arrays;
     private Light zlights[];
@@ -55,25 +43,11 @@ public class LightViewer extends JPanel
         y_bnds = new Bounds();
         z_bnds = new Bounds();
         
-        for (Light l : my_light_arrays.getLights())
-            {
+        for (Light l : my_light_arrays.getLights()) {
             x_bnds.adjust (l.x);
             y_bnds.adjust (l.y);
             z_bnds.adjust (l.z);
-            }
-
-        // Center the light arrays.  The viewer moves around this
-        // center.
-        //
-        double xc = x_bnds.center();
-        double yc = y_bnds.center();
-        double zc = z_bnds.center();
-        for (Light l : my_light_arrays.getLights())
-            {
-            l.x = l.x - xc;
-            l.y = l.y - yc;
-            l.z = l.z - zc;
-            }
+        }
 
         addComponentListener (new ComponentAdapter() {
             public void componentResized (ComponentEvent e)
