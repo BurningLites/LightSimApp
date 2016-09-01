@@ -149,14 +149,14 @@ public class LightArray
                     my_lights.add (l);
                     all_lights[ix][iy][iz] = l;
                     left_lights[ix][iy][iz] = l;
-                    strings[ix + 5 * iz][9 - iy] = l;
+                    strings[4 - ix + 20 - 5 * iz][9 - iy] = l;
 
                     l = new Light (ix+12,iy,iz, whites[iz]);
                     l.setIndices (ix+12,iy,iz);
                     my_lights.add (l);
                     all_lights[ix+5][iy][iz] = l;
                     right_lights[ix][iy][iz] = l;
-                    strings[25 + ix + 5 * iz][9 - iy] = l;
+                    strings[25 + 4 - ix + 20 - 5 * iz][9 - iy] = l;
                 }
             }
         }
