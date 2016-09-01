@@ -22,8 +22,8 @@ public class WaveController extends LightController {
     static final double Y_OFFSET_MAX = 12;
     static final double Y_OFFSET_PERIOD = 437;
     
-    static final double Y_OFFSET_PERIOD_MUL_MIN = 3;
-    static final double Y_OFFSET_PERIOD_MUL_MAX = 0.1;
+    static final double Y_OFFSET_PERIOD_MUL_MIN = 0.4;
+    static final double Y_OFFSET_PERIOD_MUL_MAX = 3;
     static final double Y_OFFSET_PERIOD_MUL_PERIOD = 1239;
     
     static final double COLOR_PERIOD = 893;
@@ -57,7 +57,7 @@ public class WaveController extends LightController {
         double xLength = modulateValue(X_LENGTH_MIN, X_LENGTH_MAX, X_LENGTH_PERIOD, theta);
         double xWidth = modulateValue(X_WIDTH_MIN, X_WIDTH_MAX, X_WIDTH_PERIOD, theta);
         double yOffsetPeriodMul = modulateValue(Y_OFFSET_PERIOD_MUL_MIN, Y_OFFSET_PERIOD_MUL_MAX, Y_OFFSET_PERIOD_MUL_PERIOD, theta);
-        double yOffset = modulateValue(Y_OFFSET_MIN, Y_OFFSET_MAX, Y_OFFSET_PERIOD * yOffsetPeriodMul, theta);
+        double yOffset = modulateValue(Y_OFFSET_MIN, Y_OFFSET_MAX, yOffsetPeriodMul * Y_OFFSET_PERIOD, theta);
         
         double colorProgTime = time / COLOR_PERIOD; 
         Color currentColor = Colors.sixColorProg(colorProgTime - Math.floor(colorProgTime));
