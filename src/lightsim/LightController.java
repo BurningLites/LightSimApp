@@ -87,8 +87,7 @@ public abstract class LightController
         }
     
     protected static Random random = new Random();
-    
-    protected LightSimExec  my_exec;
+
     protected LightArray    my_light_array;
     protected int           my_step;
     
@@ -97,8 +96,7 @@ public abstract class LightController
   // ----- access methods ---------------------------------------------
   //
     public int getStep() { return my_step; }
-        
-    public void setExec (LightSimExec exec)     { my_exec = exec; }
+
     public void setLights (int time)  {}
         
   // ----- LightController API methods --------------------------------
@@ -130,8 +128,6 @@ public abstract class LightController
     protected int increment_step()
         {
         my_step++;
-        if (my_exec != null)
-            my_exec.setStepField (my_step);
         return my_step;
         }    
 

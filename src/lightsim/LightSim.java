@@ -13,7 +13,9 @@
 package lightsim;
 
 import java.awt.event.*;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 
@@ -27,9 +29,10 @@ public class LightSim
     static public Preferences   prefs;
     
     private LightSimWindow  my_window;
-    private LeanExec    my_sim_exec;
+    private LeanExec    exec;
     private LightArray      my_light_arrays;
     private boolean enable_gui;
+    private boolean scheduled;
 
     private ArrayList<LightController> controllers;
   // ----- main() ----------------------------------------------------
@@ -39,20 +42,21 @@ public class LightSim
    */
     public static void main (String[] args)
         {
-        boolean enable_gui = true;
-        if (args.length > 0 && "--no-gui".equals(args[0])) {
-            enable_gui = false;
-        }
+        List<String> argList = Arrays.asList(args);
+        Console.log("args are %s", argList.toString());
+        boolean enable_gui = !argList.contains("--no-gui");
+        boolean scheduled = argList.contains("--scheduled");
         prefs = Preferences.userRoot();
-        light_sim = new LightSim(enable_gui);
+        light_sim = new LightSim(enable_gui, scheduled);
         light_sim.init();
         }
 
   // ----- constructor -----------------------------------------------
   //
-    public LightSim(boolean enable_gui)
+    public LightSim(boolean enable_gui, boolean scheduled)
         {
         this.enable_gui = enable_gui;
+        this.scheduled = scheduled;
         }
 
   // ----- init() -----------------------------------------------------
@@ -77,15 +81,24 @@ public class LightSim
         controllers.add(new WaveController());
         
         if (enable_gui) {
-            my_sim_exec = new LeanExec(my_light_arrays);
-            my_window = new LightSimWindow(controllers, my_sim_exec, my_light_arrays);
+            exec = new LeanExec(my_light_arrays);
+            my_window = new LightSimWindow(controllers, exec, my_light_arrays);
+            
+            
         } else {
-            LeanExec leanExec = new LeanExec(my_light_arrays);
-            leanExec.setController(new WaveController());
-            leanExec.start();  // Starts running LeanExec on the executor.
+            exec = new LeanExec(my_light_arrays);
+            exec.setController(new WaveController());
 
-            Server server = new Server(leanExec);
+            Server server = new Server(exec);
             server.start();
+        }
+        
+        if (scheduled) {
+            Console.log("running in scheduled mode");
+            exec.setIsScheduled(true);
+        } else {
+            Console.log("starting immediately");
+            exec.start();  // Starts running LeanExec on the executor.
         }
     }
 }
