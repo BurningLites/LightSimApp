@@ -103,12 +103,14 @@ public class LightSimToolbar extends JPanel
     
     ArrayList<LightController> controllers;
     LeanExec    my_exec;
+    String state;
 
   // ----- constructor ------------------------------------------------
   //
     public LightSimToolbar(ArrayList<LightController> controllers, LeanExec exec) {
         super();
         this.controllers = controllers;
+        state = "reset";
         my_exec = exec;
         init();
     }
@@ -278,14 +280,20 @@ public class LightSimToolbar extends JPanel
 
   // ----- setToolbarState() ---------------------------------------
   //
-    public void setToolbarState (String state)
-        {
+    public void setToolbarState (String state) {
+        if (this.state.equals(state)) {
+            return;
+        }
+        this.state = state;
         switch (state)
             {
             case "reset":
+                reset_button.setEnabled (false);
                 run_button.setIcon (RUN_ICON);
                 run_button.setActionCommand ("run");
                 run_button.setToolTipText ("run lights");
+                run_button.setEnabled (true);
+                step_button.setEnabled (true);
                 break;
 
             case "pause":
@@ -298,7 +306,7 @@ public class LightSimToolbar extends JPanel
                 break;
 
             case "run":
-                reset_button.setEnabled (false);
+                reset_button.setEnabled (true);
                 run_button.setIcon (PAUSE_ICON);
                 run_button.setActionCommand ("pause");
                 run_button.setToolTipText ("pause lights");
@@ -329,11 +337,11 @@ public class LightSimToolbar extends JPanel
                 break;
 
             case "pause":
-                my_exec.stop();
+                my_exec.pause();
                 break;
 
             case "reset":
-                my_exec.reset();
+                my_exec.stop();
                 break;
 
             case "run":

@@ -24,7 +24,7 @@ import javax.swing.*;
 public class LightSimWindow extends JFrame implements ExecListener {
     private LeanExec lightSimExec;
 
-    private LightSimToolbar  my_toolbar;
+    private LightSimToolbar  toolbar;
     private LightViewer my_light_viewer;
 
   // ----- constructor ------------------------------------------------
@@ -75,8 +75,8 @@ public class LightSimWindow extends JFrame implements ExecListener {
         if (!on_screen)
             setBounds (100,100, 600,400);
 
-        my_toolbar = new LightSimToolbar(controllers, lightSimExec);
-        content.add (my_toolbar, BorderLayout.NORTH);
+        toolbar = new LightSimToolbar(controllers, lightSimExec);
+        content.add (toolbar, BorderLayout.NORTH);
         my_light_viewer = new LightViewer (light_arrays);
         content.add (my_light_viewer, BorderLayout.CENTER);     
         
@@ -90,7 +90,12 @@ public class LightSimWindow extends JFrame implements ExecListener {
     }
 
     @Override
-    public void execStateChanged(boolean running) {
+    public void execStateChanged(boolean running, boolean paused) {
+        String state = "run";
+        if (!running) {
+            state = paused ? "pause" : "reset";
+        }
+        toolbar.setToolbarState(state);
     }
     
     @Override

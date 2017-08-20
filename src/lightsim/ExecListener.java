@@ -6,7 +6,7 @@ package lightsim;
  */
 public interface ExecListener {
     
-    public void execStateChanged(boolean running);
+    public void execStateChanged(boolean running, boolean paused);
     
     public void newFrameReady();
 }
