@@ -6,7 +6,7 @@
 #define LED_PIN 13
 
 #define USE_COMBINED_INTERRUPT 1
-#define ENABLE_SERIAL 0
+#define ENABLE_SERIAL 1
 
 volatile int16_t writeIndex;
 volatile boolean dataReady;
@@ -32,6 +32,7 @@ const int kWireMap[] = {
 void setup() {
 #if ENABLE_SERIAL
   Serial.begin(115200);  // For debugging.
+  while (!Serial);
 #endif
 
   // Set up pins to control lights.
@@ -51,6 +52,7 @@ void setup() {
 
   // Set up SPI
 //  pinMode(MISO, OUTPUT);
+
   SPCR |= (1<<SPE);  // Enable SPI in slave mode.
   PrepareForSPI();
 
@@ -86,7 +88,9 @@ void CheckStartSequence() {
            break;
         }
       } else {
-        Serial.println(SPDR, HEX);
+        Serial.print(SPDR, HEX);
+        Serial.print(" ");
+        Serial.println(startSequenceCount);
         break;
       }
     } else if (++escapeCounter == 1000000) {
@@ -119,7 +123,6 @@ void ReceiveData() {
 
 #if USE_COMBINED_INTERRUPT
 ISR(SPI_STC_vect) {
-//  Serial.println(SPDR, HEX);
   if (SPDR == 0x01) {
     CheckStartSequence();
   }
@@ -127,7 +130,7 @@ ISR(SPI_STC_vect) {
 #else  // USE_COMBINED_INTERRUPT
 ISR(SPI_STC_vect) {
   if (SPDR == 0x01) {
-    startSequenceCount
+    startSequenceCount = 0
     lastWriteIndex = writeIndex;
     writeIndex = 0;
     inTransfer = true;
@@ -136,7 +139,7 @@ ISR(SPI_STC_vect) {
 
     if (writeIndex == kDataLength) {
       WriteLEDs();
-      ePrepareForSPI();
+      PrepareForSPI();
       framesReceived++;
     }
   }
@@ -239,3 +242,4 @@ inline void sendLowBit() {
     "I" (PORTD0)  // %2 - data
   );
 }
+
