@@ -6,7 +6,7 @@
 #define LED_PIN 13
 
 #define USE_COMBINED_INTERRUPT 1
-#define ENABLE_SERIAL 1
+#define ENABLE_SERIAL 0
 
 volatile int16_t writeIndex;
 volatile boolean dataReady;
@@ -32,7 +32,7 @@ const int kWireMap[] = {
 void setup() {
 #if ENABLE_SERIAL
   Serial.begin(115200);  // For debugging.
-  while (!Serial);
+//  while (!Serial);  // Wait until serial is connected before doing anything.
 #endif
 
   // Set up pins to control lights.
@@ -88,9 +88,7 @@ void CheckStartSequence() {
            break;
         }
       } else {
-        Serial.print(SPDR, HEX);
-        Serial.print(" ");
-        Serial.println(startSequenceCount);
+        Serial.println(SPDR, HEX);
         break;
       }
     } else if (++escapeCounter == 1000000) {
