@@ -32,6 +32,7 @@ const int kWireMap[] = {
 void setup() {
 #if ENABLE_SERIAL
   Serial.begin(115200);  // For debugging.
+//  while (!Serial);  // Wait until serial is connected before doing anything.
 #endif
 
   // Set up pins to control lights.
@@ -51,6 +52,7 @@ void setup() {
 
   // Set up SPI
 //  pinMode(MISO, OUTPUT);
+
   SPCR |= (1<<SPE);  // Enable SPI in slave mode.
   PrepareForSPI();
 
@@ -119,7 +121,6 @@ void ReceiveData() {
 
 #if USE_COMBINED_INTERRUPT
 ISR(SPI_STC_vect) {
-//  Serial.println(SPDR, HEX);
   if (SPDR == 0x01) {
     CheckStartSequence();
   }
@@ -127,7 +128,7 @@ ISR(SPI_STC_vect) {
 #else  // USE_COMBINED_INTERRUPT
 ISR(SPI_STC_vect) {
   if (SPDR == 0x01) {
-    startSequenceCount
+    startSequenceCount = 0
     lastWriteIndex = writeIndex;
     writeIndex = 0;
     inTransfer = true;
@@ -136,7 +137,7 @@ ISR(SPI_STC_vect) {
 
     if (writeIndex == kDataLength) {
       WriteLEDs();
-      ePrepareForSPI();
+      PrepareForSPI();
       framesReceived++;
     }
   }
@@ -239,3 +240,4 @@ inline void sendLowBit() {
     "I" (PORTD0)  // %2 - data
   );
 }
+
