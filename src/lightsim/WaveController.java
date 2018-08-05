@@ -56,8 +56,15 @@ public class WaveController extends LightController {
         double xHalfAmp = modulateValue(X_HALF_AMP_MIN, X_HALF_AMP_MAX, X_AMP_PERIOD, theta);
         double xLength = modulateValue(X_LENGTH_MIN, X_LENGTH_MAX, X_LENGTH_PERIOD, theta);
         double xWidth = modulateValue(X_WIDTH_MIN, X_WIDTH_MAX, X_WIDTH_PERIOD, theta);
-        double yOffsetPeriodMul = modulateValue(Y_OFFSET_PERIOD_MUL_MIN, Y_OFFSET_PERIOD_MUL_MAX, Y_OFFSET_PERIOD_MUL_PERIOD, theta);
-        double yOffset = modulateValue(Y_OFFSET_MIN, Y_OFFSET_MAX, yOffsetPeriodMul * Y_OFFSET_PERIOD, theta);
+
+        // For y-offset, shift between a faster (low period) and slower (high period) curve.
+        // The phase is a [0..1] value that determines which curve dominates in the final
+        // value.
+        double yOffsetPhase = modulateValue(0, 1, Y_OFFSET_PERIOD_MUL_PERIOD, theta);
+        double yOffsetSlow = Math.sin(theta * Math.PI / (Y_OFFSET_PERIOD * Y_OFFSET_PERIOD_MUL_MAX));
+        double yOffsetFast = Math.sin(theta * Math.PI / (Y_OFFSET_PERIOD * Y_OFFSET_PERIOD_MUL_MIN));
+        double yOffsetHalfAmp = (Y_OFFSET_MAX - Y_OFFSET_MIN) / 2.0;
+        double yOffset = yOffsetHalfAmp * (Y_OFFSET_MIN + (yOffsetPhase * yOffsetSlow + (1.0 - yOffsetPhase) * yOffsetFast));
         
         double colorProgTime = time / COLOR_PERIOD; 
         Color currentColor = Colors.sixColorProg(colorProgTime - Math.floor(colorProgTime));
