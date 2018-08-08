@@ -36,10 +36,10 @@ import lightsim.server.HelloHandler;
  * @author kbongort
  */
 public class Server implements HttpHandler {
-    
+
     HttpServer httpServer;
     LeanExec lightExec;
-    
+
     public Server(LeanExec lightExec) {
         this.lightExec = lightExec;
         try {
@@ -49,7 +49,7 @@ public class Server implements HttpHandler {
         } catch (IOException e) {
             Console.log("Failed to start HTTP server. :(");
         }
-        
+
         try {
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(8080);
         server.setHandler(new HelloHandler());
@@ -59,14 +59,14 @@ public class Server implements HttpHandler {
             Console.log("Failed to start Jetty server. :( " + e);
         }
     }
-    
+
     public void start() {
         httpServer.start();
     }
-    
+
     @Override public void handle(HttpExchange exchange) throws IOException {
         String response = "I'm a response.";
-        
+
         exchange.sendResponseHeaders(200, response.length());
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());

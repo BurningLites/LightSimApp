@@ -80,18 +80,16 @@ public class LightSim
         controllers.add(new SparklesController());
         controllers.add(new WaveController());
         
+        exec = new LeanExec(my_light_arrays);
         if (enable_gui) {
-            exec = new LeanExec(my_light_arrays);
             my_window = new LightSimWindow(controllers, exec, my_light_arrays);
-            
-            
         } else {
             exec = new LeanExec(my_light_arrays);
             exec.setController(new WaveController());
-
-            Server server = new Server(exec);
-            server.start();
         }
+        Server server = new Server(exec);
+        server.start();
+        
         
         if (scheduled) {
             Console.log("running in scheduled mode");
