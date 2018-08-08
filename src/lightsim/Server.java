@@ -29,6 +29,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import lightsim.server.HelloHandler;
 
 /**
  *
@@ -47,6 +48,15 @@ public class Server implements HttpHandler {
             httpServer.setExecutor(null);  // creates a default executor
         } catch (IOException e) {
             Console.log("Failed to start HTTP server. :(");
+        }
+        
+        try {
+        org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(8080);
+        server.setHandler(new HelloHandler());
+        server.start();
+        server.dumpStdErr();
+        } catch (Exception e) {
+            Console.log("Failed to start Jetty server. :( " + e);
         }
     }
     
