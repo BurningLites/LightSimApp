@@ -166,6 +166,7 @@ public class LeanExec implements Runnable {
 
     public void setController(LightController controller) {
         controller.init(lights);
+        clock.reset();
         this.controller = controller;
         notifyStateChange();
     }
