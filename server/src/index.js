@@ -110,7 +110,7 @@ class ControlPanel extends React.Component {
   }
 
   sendControlRequest(command) {
-    fetch("http://localhost:8000/control/" + command)
+    fetch("http://" + window.location.hostname + ":8000/control/" + command)
       .then(res => res.json())
       .then((result) => {
         console.log("Response from control server: " + JSON.stringify(result));

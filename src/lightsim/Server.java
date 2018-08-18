@@ -101,8 +101,10 @@ public class Server implements HttpHandler, ExecListener {
                 break;
         }
 
+        Headers requestHeaders = exchange.getRequestHeaders();
+        String origin = requestHeaders.get("Origin").get(0);
         Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.add("Access-Control-Allow-Origin", "http://localhost:3000");
+        responseHeaders.add("Access-Control-Allow-Origin", origin);
 
         String response = getStatusJson();
         exchange.sendResponseHeaders(200, response.length());
