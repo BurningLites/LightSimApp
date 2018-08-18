@@ -93,14 +93,14 @@ public class LightSimToolbar extends JPanel
     private JButton     reset_button;
     private JButton     run_button;
     private JButton     step_button;
-    
+
     private JComboBox<LightController>  controller_cbx;
 
     private JComboBox<String>  frame_rate_cbx;
     private JComboBox<String>  speed_cbx;
     private JTextField  step_txtfld, time_txtfld;
     private JCheckBox   animation_chkbx;
-    
+
     ArrayList<LightController> controllers;
     LeanExec    my_exec;
     String state;
@@ -146,14 +146,14 @@ public class LightSimToolbar extends JPanel
       // the LightSimExec.
       //
         run_toolbar.addSeparator();
-        
+
         controller_cbx = new JComboBox();
         controller_cbx.addItemListener (this);
         controller_cbx.setMaximumRowCount(controllers.size());
         for (LightController controller : controllers) {
             controller_cbx.addItem (controller);
         }
-        
+
         run_toolbar.add (controller_cbx);
 
         run_toolbar.add (new JLabel(" step:"));
@@ -162,7 +162,7 @@ public class LightSimToolbar extends JPanel
 
       // Add a separator and the popdown menus for controlling
       // the frame rate, simulation speed and light controller
-      // selection.  
+      // selection.
       //
         run_toolbar.addSeparator();
 
@@ -177,7 +177,7 @@ public class LightSimToolbar extends JPanel
         speed_cbx.setSelectedItem (Speed.SPEED_1);
         speed_cbx.addItemListener (this);
         run_toolbar.add (speed_cbx);
-        
+
       // Add another separator and text fields for reporting
       // time and step.
       //
@@ -217,7 +217,7 @@ public class LightSimToolbar extends JPanel
         boolean have_controllers = controller_cbx.getItemCount() > 0;
         run_button.setEnabled (value && have_controllers);
         step_button.setEnabled (value && have_controllers);
-        
+
         speed_cbx.setEnabled (value);
         controller_cbx.setEnabled (value && have_controllers);
         }
@@ -230,7 +230,11 @@ public class LightSimToolbar extends JPanel
                     = (FrameRate) frame_rate_cbx.getSelectedItem();
         return selected_rate.getFrameRate();
         }
-    
+
+    public void setSelectedController(LightController controller) {
+        controller_cbx.setSelectedItem(controller);
+    }
+
   // ----- getSelectedController() ------------------------------------
   //
     public LightController getSelectedController()
@@ -362,7 +366,7 @@ public class LightSimToolbar extends JPanel
     public void itemStateChanged (ItemEvent event)
         {
         Object src = event.getSource();
-        
+
         if (src == speed_cbx &&
                 event.getStateChange() == ItemEvent.SELECTED) {
             my_exec.setSpeed (getSpeed());
@@ -376,7 +380,7 @@ public class LightSimToolbar extends JPanel
                 my_exec.setController(getSelectedController());
         }
     }
-    
+
 }
 
 //*************************************************************************

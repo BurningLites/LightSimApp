@@ -23,6 +23,7 @@ public class LeanExec implements Runnable {
     LightController controller;
     Clock sunClock;
     Timer sunEventTimer;
+    Clock.Event nextSunEvent;
 
     public LeanExec(LightArray lights) {
 
@@ -33,7 +34,7 @@ public class LeanExec implements Runnable {
         listeners = new ArrayList<>();
         spiWriter = SpiWriter.getWriter();
         if (spiWriter == null) {
-            Console.log("Couldn't get writer. :(");
+            Console.log("Couldn't get writer. This is totes normal if not running on the Pi.");
         }
     }
 
@@ -90,8 +91,16 @@ public class LeanExec implements Runnable {
         return isRunning;
     }
 
+    public boolean isPaused() {
+        return isPaused;
+    }
+
     public boolean isScheduled() {
         return isScheduled;
+    }
+
+    public Clock.Event nextSunEvent() {
+        return nextSunEvent;
     }
 
     public void setIsScheduled(boolean isScheduled) {
@@ -100,9 +109,9 @@ public class LeanExec implements Runnable {
         }
         this.isScheduled = isScheduled;
         if (isScheduled) {
-            final Clock.Event nextEvent = scheduleSunEventTimer();
+            nextSunEvent = scheduleSunEventTimer();
 
-            if (nextEvent.type == Clock.EventType.SUNRISE) {
+            if (nextSunEvent.type == Clock.EventType.SUNRISE) {
                 // If the next event is sunrise, turn the lights on.
                 start();
             } else {
@@ -110,8 +119,10 @@ public class LeanExec implements Runnable {
                 turnOffLights();
             }
         } else {
+            nextSunEvent = null;
             if (sunEventTimer != null) {
                 sunEventTimer.cancel();
+                sunEventTimer = null;
             }
         }
     }
@@ -156,6 +167,11 @@ public class LeanExec implements Runnable {
     public void setController(LightController controller) {
         controller.init(lights);
         this.controller = controller;
+        notifyStateChange();
+    }
+
+    public String getControllerName() {
+        return controller.name();
     }
 
     public void setSpeed(double speed) {
@@ -186,7 +202,7 @@ public class LeanExec implements Runnable {
 
     private void notifyStateChange() {
         for (ExecListener listener : listeners) {
-            listener.execStateChanged(isRunning, isPaused);
+            listener.execStateChanged(isRunning, isPaused, controller);
         }
     }
     private void notifyNewFrame() {
