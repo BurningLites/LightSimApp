@@ -23,10 +23,10 @@ import lightsim.LightArray.Light;
 public class TimesSquareController extends LightController
     {
     private static final String HELLO_WORLD = "WELCOME HOME! ";
-    
+
     private Light[][] lights;
     private LSFont my_font;
-    
+
     private int nx, ny, nxm1;
     private int t_next;
     private int  dt = 250;
@@ -47,7 +47,7 @@ public class TimesSquareController extends LightController
   // ----- name() -----------------------------------------------------
   //
     public String name()    { return "Times Square"; }
-    
+
   // ----- init() -----------------------------------------------------
   //
   // Organize the lights into arrays that facilitate the manipulation
@@ -56,7 +56,7 @@ public class TimesSquareController extends LightController
     public void init (LightArray light_array)
         {
         super.init (light_array);
-        
+
         if (lights == null)
             {
             nx = 26; ny = 10;
@@ -88,9 +88,9 @@ public class TimesSquareController extends LightController
                     }
                 }
             }
-        
+
         my_light_array.reset();
-        
+
         ic = 0;
         color_idx = -1;
         t_next = -1;
@@ -113,10 +113,9 @@ public class TimesSquareController extends LightController
                 for (int iy=0; iy<ny; iy++)
                   { Light l_to = lights[ix][iy];
                     Light l_from = lights[ix+1][iy];
-                    l_to.on = l_from.on;
                     l_to.color = l_from.color;
                     }
-                  
+
           // Set the rightmost column.  If we're starting a new
           // character, then we get set to render it and reset the
           // lights in the rightmost column.  This introduces a
@@ -136,8 +135,7 @@ public class TimesSquareController extends LightController
               // Draw a single column of space between characters.
               //
                 for (int iy=0; iy<ny; iy++)
-                  { lights[nxm1][iy].on = false;
-                    lights[nxm1][iy].color = Color.BLACK;
+                  { lights[nxm1][iy].color = Color.BLACK;
                     }
                 }
               else
@@ -149,7 +147,7 @@ public class TimesSquareController extends LightController
             t_next = clock + dt;
             increment_step();
             }
-        
+
         return true;
         }
     }

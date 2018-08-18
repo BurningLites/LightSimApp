@@ -38,7 +38,7 @@ public class StringIDsController extends LightController
   //
     @Override
     public String name()    { return "String IDs"; }
-    
+
   // ----- init() ------------------------------------------------------
   //
     @Override
@@ -47,20 +47,20 @@ public class StringIDsController extends LightController
         super.init (light_array);
         Light left_lights[][][] = light_array.getLeftLights();
         Light right_lights[][][] = light_array.getRightLights();
-        
-      // We assume that the left and right arrays have the same 
+
+      // We assume that the left and right arrays have the same
       // dimensions.
       //
         int nx = left_lights.length;
         int ny = left_lights[0].length;
         int nym1 = ny - 1;
         int nz = left_lights[0][0].length;
-        
+
       // Set the bottom, middle and top layers of lights to white
       // and a couple of shades of blue.
       //
         my_light_array.reset();
-        
+
         my_light_array.fillYPlane (0, left_lights, Color.WHITE);
         my_light_array.fillYPlane (4, left_lights, LIGHTER_BLUE);
         my_light_array.fillYPlane (5, left_lights, LIGHTER_BLUE);
@@ -69,7 +69,7 @@ public class StringIDsController extends LightController
         my_light_array.fillYPlane (4, right_lights, LIGHTER_BLUE);
         my_light_array.fillYPlane (5, right_lights, LIGHTER_BLUE);
         my_light_array.fillYPlane (nym1, right_lights, BRIGHTER_BLUE);
-        
+
       // Set up the binary codes for x and z coordinates.  Start with
       // 1 so that each code has at least one visible bit.
       //
@@ -80,20 +80,16 @@ public class StringIDsController extends LightController
                   { base_iy++;
                     if ( (mask & (ix+1)) != 0)
                       { left_lights[ix][base_iy][iz].setColor (Color.RED);
-                        left_lights[ix][base_iy][iz].on = true;
                         right_lights[ix][base_iy][iz].setColor (Color.GREEN);
-                        right_lights[ix][base_iy][iz].on = true;
                         }
                     if ( (mask & (iz+1)) != 0)
                       { left_lights[ix][base_iy+5][iz].setColor (Color.RED);
-                        left_lights[ix][base_iy+5][iz].on = true;
                         right_lights[ix][base_iy+5][iz].setColor (Color.GREEN);
-                        right_lights[ix][base_iy+5][iz].on = true;
                         }
                     }
                 }
         }
-    
+
   // ----- step() ------------------------------------------------------
   //
     @Override

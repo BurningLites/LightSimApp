@@ -27,7 +27,7 @@ public class PulseController extends LightController
     private Color blue_wave[];
     private static final Color OFF_COLOR = new Color (155,155,155);
     private int i0;
-    
+
   // ----- constructor -------------------------------------------------
   //
     public PulseController()
@@ -35,7 +35,7 @@ public class PulseController extends LightController
         on_wave = new boolean[WAVE_LENGTH+4];
         blue_wave = new Color[WAVE_LENGTH+4];
         }
-    
+
   // ----- init() -----------------------------------------------------
   //
     public void init (LightArray light_array)
@@ -44,7 +44,7 @@ public class PulseController extends LightController
         i0 = -1;
         step (0);
         }
-    
+
   // ----- name() -----------------------------------------------------
   //
     public String name()
@@ -78,15 +78,15 @@ public class PulseController extends LightController
             }
         return true;
         }
-    
+
   // ----- setLights() -------------------------------------------------
   //
     public void setLights (int time)
         {
         for (LightArray.Light light : my_light_array.getLights())
             {
-            light.on = on_wave[light.iy];
-            light.color = blue_wave[light.iy];
+            final boolean isOn = on_wave[light.iy];
+            light.color = isOn ? blue_wave[light.iy] : Color.BLACK;
             }
         }
     }

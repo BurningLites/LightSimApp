@@ -140,7 +140,7 @@ public class SpiralController extends LightController
             0b00000000,
             0b00000000 },
         };
-    
+
     Light[][][] left_lights, right_lights;
     int iy, iyp1, nx, ny, nz;
 
@@ -169,7 +169,7 @@ public class SpiralController extends LightController
   // ----- name() -----------------------------------------------------
   //
     public String name()    { return "Spiral"; }
-    
+
   // ----- step() -----------------------------------------------------
   //
     public boolean step (int clock)
@@ -200,7 +200,7 @@ public class SpiralController extends LightController
         increment_step();
         return true;
         }
-    
+
   // ----- mirror_y_layer() ---------------------------------------------
   //
     private void mirror_y_layer (Light layer[][], byte pattern[])
@@ -214,13 +214,11 @@ public class SpiralController extends LightController
                 Light l = layer[4-ix][4-iz];
                 if ((mask & row_pattern) !=  0)
                     {
-                    l.on = true;
                     l.color = Color.GREEN;
                     }
                   else
                     {
-                    l.on = false;
-                    l.color = Color.LIGHT_GRAY;
+                    l.color = Color.BLACK;
                     }
                 mask = mask << 1;
                 }
@@ -240,13 +238,11 @@ public class SpiralController extends LightController
                 Light l = layer[ix][iz];
                 if ((mask & row_pattern) !=  0)
                     {
-                    l.on = true;
                     l.color = Color.CYAN;
                     }
                   else
                     {
-                    l.on = false;
-                    l.color = Color.LIGHT_GRAY;
+                    l.color = Color.BLACK;
                     }
                 mask = mask >>> 1;
                 }
