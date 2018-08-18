@@ -59,12 +59,12 @@ public abstract class LSFont
                 {
                 Light light = lights[ix][iy];
                 if ((mask & column) !=0 )
-                  { light.on = true;
+                  {
                     light.color = foreground;
                     }
                   else
-                  { light.on = false;
-                    light.color = background;
+                  {
+                    light.color = Color.BLACK;
                     }
                 mask = mask >>> 1;
                 }
@@ -99,11 +99,11 @@ public abstract class LSFont
             {
             Light light = lights[iy];
             if ((mask & column_raster) !=0 )
-              { light.on = true;
+              {
                 light.color = foreground;
                 }
               else
-              { light.on = background != Color.BLACK;
+              {
                 light.color = background;
                 }
             mask = mask >>> 1;
@@ -143,11 +143,11 @@ public abstract class LSFont
             int column = char_raster[ic++];
             Light light = lights[ix][y_offset];
             if ((mask & column) !=0 )
-              { light.on = true;
+              {
                 light.color = foreground;
                 }
               else
-              { light.on = background != Color.BLACK;
+              {
                 light.color = background;
                 }
             }

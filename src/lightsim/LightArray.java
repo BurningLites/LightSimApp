@@ -32,7 +32,6 @@ public class LightArray
         {
         public int    ix, iy, iz;
         public double x, y, z, xt, yt, zt;
-        public boolean on;
         public Color color;
 
         public Light()
@@ -48,27 +47,24 @@ public class LightArray
             y = _y;
             z = _z;
             color = _color;
-            on = false;
             }
         public void setState (Light light)
             {
-            this.on = light.on;
             this.color = light.color;
             }
         public void setState (Color _color, boolean _on)
             {
             color = _color;
-            on = _on;
             }
 
         public boolean isOn() {
             return true;
         }
-        
+
         public void setColor (Color value)  {
             color = value;
         }
-        
+
         public Color getColor () {
             return color;
         }
@@ -140,7 +136,7 @@ public class LightArray
                                 [RIGHT_DIMENSIONS[1]]
                                 [RIGHT_DIMENSIONS[2]];
         strings = new Light[50][10];
-        
+
         for (int ix=0; ix<5; ix++) {
             for (int iy=0; iy<10; iy++) {
                 for (int iz=0; iz<5; iz++) {
@@ -162,11 +158,11 @@ public class LightArray
         }
 
         Bounds x_bnds, y_bnds, z_bnds;
-        
+
         x_bnds = new Bounds();
         y_bnds = new Bounds();
         z_bnds = new Bounds();
-        
+
         for (Light l : my_lights)
             {
             x_bnds.adjust (l.x);
@@ -195,7 +191,7 @@ public class LightArray
     public int[] getRightDimensions()   { return RIGHT_DIMENSIONS; }
 
     public ArrayList<Light> getLights() { return my_lights; }
-    
+
     public Light[][][] getAllLights()   { return all_lights; }
     public Light[][][] getLeftLights()  { return left_lights; }
     public Light[][][] getRightLights() { return right_lights; }
@@ -205,26 +201,15 @@ public class LightArray
   //
     public void fill (Color color)
         {
-        fill (color, true);
-        }
-    public void fill (Color color, boolean on)
-        {
         for (Light l : my_lights)
             {
             l.color = color;
-            l.on = on;
             }
         }
 
   // ----- fillXPlane() -----------------------------------------------
   //
     public void fillXPlane (int x_idx, Light[][][] lights, Color color)
-        {
-        fillXPlane (x_idx, lights, color, true);
-        }
-
-    public void fillXPlane (int x_idx, Light[][][] lights,
-                            Color color, boolean on)
         {
         if (x_idx < 0 || lights.length <= x_idx)
             return;
@@ -234,19 +219,12 @@ public class LightArray
             for (int iz=0; iz<nz; iz++)
               { Light l = lights[x_idx][iy][iz];
                 l.setColor (color);
-                l.on = on;
                 }
         }
-    
+
   // ----- fillYPlane() -----------------------------------------------
   //
     public void fillYPlane (int y_idx, Light[][][] lights, Color color)
-        {
-        fillYPlane (y_idx, lights, color, true);
-        }
-
-    public void fillYPlane (int y_idx, Light[][][] lights,
-                            Color color, boolean on)
         {
         if (y_idx < 0 || lights[0].length <= y_idx)
             return;
@@ -256,19 +234,12 @@ public class LightArray
             for (int iz=0; iz<nz; iz++)
               { Light l = lights[ix][y_idx][iz];
                 l.setColor (color);
-                l.on = on;
                 }
         }
-    
+
   // ----- fillZPlane() -----------------------------------------------
   //
     public void fillZPlane (int z_idx, Light[][][] lights, Color color)
-        {
-        fillYPlane (z_idx, lights, color, true);
-        }
-
-    public void fillZPlane (int z_idx, Light[][][] lights,
-                            Color color, boolean on)
         {
         if (z_idx < 0 || lights[0][0].length <= z_idx)
             return;
@@ -278,10 +249,9 @@ public class LightArray
             for (int iy=0; iy<ny; iy++)
               { Light l = lights[ix][iy][z_idx];
                 l.setColor (color);
-                l.on = on;
                 }
         }
-    
+
   // ----- get_temp_light() -------------------------------------------
   //
     private Light get_temp_light()
@@ -335,8 +305,7 @@ public class LightArray
         {
         for (Light l : my_lights)
             {
-            l.color = Color.LIGHT_GRAY;
-            l.on = false;
+            l.color = Color.BLACK;
             }
         }
 
@@ -367,7 +336,7 @@ public class LightArray
             }
         return result;
         }
-    
+
   // ----- saveXPlane() ----------------------------------------------
   //
     public Light[][] saveXPlane (int x_idx, Light[][][] lights)
@@ -474,8 +443,6 @@ public class LightArray
             for (int iz=0; iz<nz; iz++)
               { dest_lights[x_idx][iy][iz].color
                         = src_plane[iy][iz].color;
-                dest_lights[x_idx][iy][iz].on
-                        = src_plane[iy][iz].on;
                 }
         }
 
@@ -493,8 +460,6 @@ public class LightArray
             for (int iz=0; iz<nz; iz++)
               { dest_lights[ix][y_idx][iz].color
                         = src_plane[ix][iz].color;
-                dest_lights[ix][y_idx][iz].on
-                        = src_plane[ix][iz].on;
                 }
         }
 
@@ -512,8 +477,6 @@ public class LightArray
             for (int iy=0; iy<ny; iy++)
               { dest_lights[ix][iy][z_idx].color
                         = src_plane[ix][iy].color;
-                dest_lights[ix][iy][z_idx].on
-                        = src_plane[ix][iy].on;
                 }
         }
 
@@ -535,7 +498,7 @@ public class LightArray
           }
         return result;
         }
-    
+
   // ----- shiftAlongXAxis() ------------------------------------------
   //
   // Shift the light states along the x-axis with wrap around.
@@ -543,12 +506,12 @@ public class LightArray
     public void shiftAlongXAxis (int shift, Light lights[][][])
         {
         if (!shift_check (shift, 0, lights))  return;
-        
+
         int nx = lights.length;
         int ny = lights[0].length;
         int nz = lights[0][0].length;
         if (nx < 2)  return;
-        
+
         int x_src, x_dest;
         int nxm1 = nx - 1;
 
@@ -565,7 +528,7 @@ public class LightArray
             x_dest = nxm1;
             saved_plane = saveXPlane (nxm1, lights);
             }
-        
+
       // Shift the light states.
       //
         for (int i=0; i<nxm1; i++)
@@ -697,8 +660,7 @@ public class LightArray
   // Shift the light states along the x-axis, and fill behind the shift
   // with lights that are black and turned off.
   //
-    public void shiftOutAlongXAxis (int shift, Light lights[][][])
-        {
+    public void shiftOutAlongXAxis (int shift, Light lights[][][]) {
         if (!shift_check (shift, 0, lights))  return;
 
         int nx = lights.length;
@@ -732,13 +694,12 @@ public class LightArray
 
       // Set final plane of lights from the saved values.
       //
-        if (shift == -1)
-          { fillXPlane (nxm1, lights, Color.BLACK, false);
-            }
-          else
-          { fillXPlane (0, lights, Color.BLACK, false);
-            }
+        if (shift == -1) {
+            fillXPlane (nxm1, lights, Color.BLACK);
+        } else {
+            fillXPlane (0, lights, Color.BLACK);
         }
+    }
 
   // ----- shiftOutAlongXAxis() ---------------------------------------
   //
@@ -781,10 +742,10 @@ public class LightArray
       // Set final plane of lights from the saved values.
       //
         if (shift == -1)
-          { fillYPlane (nym1, lights, Color.BLACK, false);
+          { fillYPlane (nym1, lights, Color.BLACK);
             }
           else
-          { fillYPlane (0, lights, Color.BLACK, false);
+          { fillYPlane (0, lights, Color.BLACK);
             }
         }
 
@@ -829,10 +790,10 @@ public class LightArray
       // Set final plane of lights from the saved values.
       //
         if (shift == -1)
-          { fillZPlane (nzm1, lights, Color.BLACK, false);
+          { fillZPlane (nzm1, lights, Color.BLACK);
             }
           else
-          { fillZPlane (0, lights, Color.BLACK, false);
+          { fillZPlane (0, lights, Color.BLACK);
             }
         }
 

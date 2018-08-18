@@ -25,13 +25,13 @@ public class GameOfLifeController extends LightController
     byte[][][] left_data, right_data;
     int nx, ny;
     int left_wait = 0, right_wait = 0;
-    
+
     public String name()    { return "Game of Life"; }
     Color[] colors = { Color.GREEN, Color.CYAN,
                         new Color(125,125,255), new Color(255,125,255),
                         Color.WHITE };
-    
-    byte[] spaceship = 
+
+    byte[] spaceship =
       { 0b10100,
         0b00010,
         0b00010,
@@ -47,12 +47,12 @@ public class GameOfLifeController extends LightController
     public void init (LightArray light_array)
         {
         super.init (light_array);
-        
+
         nx = 5;
         ny = 50;
         left_lights = new Light[nx][ny];
         right_lights = new Light[nx][ny];
-        
+
         for (Light l : my_light_array.getLights())
             {
             if (l.ix < 5)
@@ -64,14 +64,14 @@ public class GameOfLifeController extends LightController
                 l.color = colors[4-l.iz];
                 }
             }
-        
+
         left_data = new byte[2][nx][ny];
         right_data = new byte[2][nx][ny];
 
         setLights (0);
         t_next = 0;
         }
-    
+
   // ----- step() -----------------------------------------------------
   //
     @Override
@@ -200,28 +200,7 @@ public class GameOfLifeController extends LightController
             return 27;
             }
         }
-    
-  // ----- setLights() ------------------------------------------------
-  //
-    @Override
-    public void setLights (int time)
-        {
-        int data_idx = my_step % 2;
-        set_lights (left_data[data_idx], right_data[data_idx]);
-        }
-
-    private void set_lights (byte[][] left, byte[][] right)
-        {
-        for (int ix=0; ix<nx; ix++)
-            {
-            for (int iy=0; iy<ny; iy++)
-                {
-                left_lights[ix][iy].on = left[ix][iy] != 0;
-                right_lights[ix][iy].on = right[ix][iy] != 0;
-                }
-            }
-        }
-    }
+}
 
 //*************************************************************************
 //

@@ -32,7 +32,7 @@ public class ColorCubeController extends LightController
     public void init (LightArray light_array)
         {
         super.init (light_array);
-        
+
         all_lights = my_light_array.getAllLights();
         nx = all_lights.length;
         ny = all_lights[0].length;
@@ -40,7 +40,7 @@ public class ColorCubeController extends LightController
         float dc_x = 1.0f / (nx-1);
         float dc_y = 1.0f / (ny-1);
         float dc_z = 1.0f / (nz-1);
-        
+
         for (int ix=0; ix<nx; ix++)
           { float cx = calc_color_component (ix, dc_x);
             for (int iy=0; iy<ny; iy++)
@@ -49,11 +49,10 @@ public class ColorCubeController extends LightController
                   { float cz = calc_color_component (iz, dc_z);
                     Light l = all_lights[ix][iy][iz];
                     l.setColor (new Color (cx, cy, cz));
-                    l.on = true;
                     }
                 }
             }
-        all_lights[0][0][0].on= false;
+        all_lights[0][0][0].setColor(Color.BLACK);
 
         next_t = 0;
         }
@@ -85,7 +84,7 @@ public class ColorCubeController extends LightController
         while (next_t <= time)
             {
             next_t += MY_DT;
-            
+
             if (my_step == 0)
                 ;                       // Do nothing
             else if (my_step <= nx+ny+nz)
@@ -108,7 +107,7 @@ public class ColorCubeController extends LightController
                         my_light_array.shiftAlongZAxis (1, all_lights);
                         break;
                     }
-                if (!all_lights[0][0][0].on)
+                if (!all_lights[0][0][0].getColor().equals(Color.BLACK))
                     my_step = 0;
                 }
 
@@ -116,7 +115,7 @@ public class ColorCubeController extends LightController
             }
 
         return true;
-        }    
+        }
     }
 
 //*************************************************************************

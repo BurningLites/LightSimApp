@@ -32,7 +32,7 @@ public class LightViewer extends JPanel
     private double vx, vy, vz;              // coords of viewer
     private double scale;
     private int  mx, my, mxm1, mym1;        // mouse coordindates
-    
+
   // ----- constructor -------------------------------------------------
   //
     public LightViewer (LightArray light_arrays)
@@ -42,7 +42,7 @@ public class LightViewer extends JPanel
         x_bnds = new Bounds();
         y_bnds = new Bounds();
         z_bnds = new Bounds();
-        
+
         for (Light l : my_light_arrays.getLights()) {
             x_bnds.adjust (l.x);
             y_bnds.adjust (l.y);
@@ -56,7 +56,7 @@ public class LightViewer extends JPanel
                 }
             });
         }
-    
+
   // ----- init() ------------------------------------------------------
   //
     public void init()
@@ -99,22 +99,22 @@ public class LightViewer extends JPanel
         addMouseListener (this);
         addMouseMotionListener (this);
         }
-    
+
   // ----- changeViewpoint() -------------------------------------------
   //
     public void changeViewpoint()
         {
         double d = Math.sqrt (vx*vx + vz*vz);
         double vd = Math.sqrt (vx*vx + vy*vy + vz*vz);
-            
+
         double alpha = Math.atan2 (vy, d);
         double beta = Math.atan2 (vx, vz);
-        
+
         double cosa = Math.cos (alpha);
         double sina = Math.sin (alpha);
         double cosb = Math.cos (beta);
         double sinb = Math.sin (beta);
-        
+
         for (Light l : my_light_arrays.getLights())
             {
           // Rotation transform
@@ -137,7 +137,7 @@ public class LightViewer extends JPanel
         Arrays.sort (zlights);
         update (getGraphics());
         }
-    
+
   // ----- paint() ------------------------------------------------------
   //
     public void paint (Graphics g) {
@@ -149,8 +149,8 @@ public class LightViewer extends JPanel
             for (Light l : zlights) {
                 int x = (int) (xc + scale*l.xt + 0.5);
                 int y = (int) (yc - scale*l.yt + 0.5);  // invert y sense
-                
-                Color color = l.on ? l.color : Color.black;
+
+                Color color = l.color;
                 g.setColor (color);
                 g.fillOval (x-4, y-4, 9,9);
             }
@@ -158,7 +158,7 @@ public class LightViewer extends JPanel
     }
 
   // ========== KeyListener support ==================================
-  //    
+  //
     public void keyPressed (KeyEvent e)
         {
         if (e.getSource () != this)  return;
@@ -236,7 +236,7 @@ public class LightViewer extends JPanel
                 break;
             }
         }
-    
+
     public void keyReleased (KeyEvent e)
         {
         }

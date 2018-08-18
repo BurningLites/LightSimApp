@@ -213,11 +213,11 @@ public class LeanExec implements Runnable {
     }
 
     private void turnOffLights() {
-        lights.fill(Color.BLACK, false);
+        lights.fill(Color.BLACK);
         writeFrame();
-        lights.fill(Color.BLACK, false);
+        lights.fill(Color.BLACK);
         writeFrame();
-        lights.fill(Color.BLACK, false);
+        lights.fill(Color.BLACK);
         writeFrame();
     }
 

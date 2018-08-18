@@ -48,9 +48,9 @@ public class SpriteController extends LightController
     public void init (LightArray light_array)
         {
         super.init (light_array);
-        my_light_array.fill (Color.BLACK, false);
+        my_light_array.fill(Color.BLACK);
         }
-    
+
   // ----- step() ------------------------------------------------------
   //
     @Override
@@ -59,8 +59,8 @@ public class SpriteController extends LightController
         increment_step();
         return true;
         }
-    
-    
+
+
       // ----- find_adjacent_lights() --------------------------------------
   //
   // Find lights adjacent to a given position that are (1) inside the
@@ -91,7 +91,7 @@ public class SpriteController extends LightController
         int nxm1 = nx - 1;
         int nym1 = ny - 1;
         int nzm1 = nz - 1;
-        
+
         for (int dx=-1; dx<=1; dx++)
             for (int dy=-1; dy<=1; dy++)
                 for (int dz=-1; dz<=1; dz++)
@@ -105,7 +105,7 @@ public class SpriteController extends LightController
                   //
                     if (NOT_OK[dx+1][dy+1][dz+1])
                         continue;
-                    
+
                   // Calculcate a set of adjacent coordinates and
                   // check that they are within the light grid.
                   //
@@ -115,8 +115,8 @@ public class SpriteController extends LightController
                     if (y < 0 || nym1 < y)  continue;
                     int z=iz+dz;
                     if (z < 0 || nzm1 < z)  continue;
-                    
-                  // Check that the position is not part of the 
+
+                  // Check that the position is not part of the
                   // snake or any other object.
                   //
                     LightArray.Light adjacent_light = lights[x][y][z];
@@ -177,7 +177,6 @@ public class SpriteController extends LightController
                 for (int iz=0; iz<nz; iz++)
           { Light l = lights[ix][iy][iz];
             l.color = Color.BLACK;
-            l.on = false;
             }
         }
 

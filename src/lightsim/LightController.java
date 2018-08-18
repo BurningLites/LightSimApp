@@ -85,12 +85,12 @@ public abstract class LightController
                     BRIGHT_COLOR_HEXAGON[ix][iy] = bcc;
                   }
         }
-    
+
     protected static Random random = new Random();
 
     protected LightArray    my_light_array;
     protected int           my_step;
-    
+
     private ArrayList<Animation> animations;
 
   // ----- access methods ---------------------------------------------
@@ -98,7 +98,7 @@ public abstract class LightController
     public int getStep() { return my_step; }
 
     public void setLights (int time)  {}
-        
+
   // ----- LightController API methods --------------------------------
   //
     public void init (LightArray light_array) {
@@ -109,10 +109,10 @@ public abstract class LightController
     abstract public String name();
 
     // Step with time in millis. Not necessary to call super in override.
-    public boolean step(int time) { 
+    public boolean step(int time) {
         return true;
     }
-    
+
     // Step with time in seconds. Not necessary to call super in override.
     public boolean step(double time) {
         return step((int)(time * 1000));
@@ -122,14 +122,14 @@ public abstract class LightController
   //
     @Override
     public String toString()    { return name(); }
-    
+
   // ----- increment_step() -------------------------------------------
   //
     protected int increment_step()
         {
         my_step++;
         return my_step;
-        }    
+        }
 
   // ----- clear_layer() -------------------------------------------
   //
@@ -142,8 +142,7 @@ public abstract class LightController
             for (int iz=0; iz<nz; iz++)
                 {
                 Light l = layer[ix][iz];
-                l.on = false;
-                l.color = Color.LIGHT_GRAY;
+                l.color = Color.BLACK;
                 }
         }
 
@@ -159,7 +158,6 @@ public abstract class LightController
                 {
                 Light from_l = from[ix][iy];
                 Light to_l = to[ix][iy];
-                to_l.on = from_l.on;
                 to_l.color = from_l.color;
                 }
         }
@@ -178,13 +176,11 @@ public abstract class LightController
                 Light l = layer[4-ix][4-iz];
                 if ((mask & row_pattern) !=  0)
                     {
-                    l.on = true;
                     l.color = color;
                     }
                   else
                     {
-                    l.on = false;
-                    l.color = Color.LIGHT_GRAY;
+                    l.color = Color.BLACK;
                     }
                 mask = mask << 1;
                 }
@@ -198,7 +194,7 @@ public abstract class LightController
         int ic = pick_number (0, BRIGHT_COLORS.size()-1);
         return BRIGHT_COLORS.get (ic);
         }
-    
+
   // ----- pickAdjacentColor() ----------------------------------------
   //
     public BC_Color pickAdjacentColor (BC_Color bcc)
@@ -208,7 +204,7 @@ public abstract class LightController
         ArrayList<BC_Color> adj_colors = new ArrayList<>();
         for (int ix=-1; ix<=1; ix++)
           { int ix_bch = cix + ix;
-            if (ix_bch < 0 || BRIGHT_COLOR_HEXAGON.length <= ix_bch)  
+            if (ix_bch < 0 || BRIGHT_COLOR_HEXAGON.length <= ix_bch)
                 continue;
             int y0, yn;
             switch (ix)
@@ -243,7 +239,7 @@ public abstract class LightController
         int ic = pick_number (0, adj_colors.size()-1);
         return adj_colors.get(ic);
         }
-    
+
   // ----- pick_number() -------------------------------------------
   //
   // Randomly pick a number within the given range (inclusive).  The
@@ -269,11 +265,9 @@ public abstract class LightController
             for (int iz=0; iz<5; iz++) {
                 Light l = layer[ix][iz];
                 if ((mask & row_pattern) !=  0) {
-                    l.on = true;
                     l.color = color;
                 } else {
-                    l.on = false;
-                    l.color = Color.LIGHT_GRAY;
+                    l.color = Color.BLACK;
                 }
                 mask = mask >>> 1;
             }
@@ -282,20 +276,19 @@ public abstract class LightController
 
     protected void clearLights() {
         for (Light light : my_light_array.getLights()) {
-            light.on = true;
             light.color = bgColor;
         }
     }
-    
+
     protected void addAnimation(Animation animation) {
         animations.add(animation);
     }
-    
+
     protected void removeAnimation(Animation animation) {
         animation.onComplete();
         animations.remove(animation);
     }
-    
+
     protected void updateAnimations(double time) {
         ArrayList<Animation> animationsToRemove = new ArrayList<>();
         for (Animation animation : animations) {
@@ -307,11 +300,11 @@ public abstract class LightController
         }
         animations.removeAll(animationsToRemove);
     }
-    
+
     protected static double randomDoubleInRange(double min, double max) {
         return min + (random.nextDouble() * (max - min));
     }
-    
+
     protected static double clamp(double val, double min, double max) {
         if (val < min) {
             val = min;
