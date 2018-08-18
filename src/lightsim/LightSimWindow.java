@@ -39,13 +39,13 @@ public class LightSimWindow extends JFrame implements ExecListener {
 
       // Set up a default window bounds and provide for storing and retrieving
       // the most recent window size and location in/from the preferences
-      // for LightSim.  
+      // for LightSim.
       //
         setSize (LightSim.prefs.getInt ("LightSim_window_width", 600),
                  LightSim.prefs.getInt ("LightSim_window_height", 400));
         setLocation (LightSim.prefs.getInt ("LightSim_window_x", 100),
                      LightSim.prefs.getInt ("LightSim_window_y", 100));
-        
+
         addComponentListener (new ComponentAdapter() {
             public void componentMoved (ComponentEvent e) {
                 LightSim.prefs.putInt ("LightSim_window_x", getX());
@@ -64,7 +64,7 @@ public class LightSimWindow extends JFrame implements ExecListener {
       // so that the reset is captured and saved.
       //
         Rectangle window_bounds = getBounds();
-        GraphicsEnvironment 
+        GraphicsEnvironment
                 genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
         boolean on_screen = false;
         for (GraphicsDevice gdev : genv.getScreenDevices()) {
@@ -78,8 +78,8 @@ public class LightSimWindow extends JFrame implements ExecListener {
         toolbar = new LightSimToolbar(controllers, lightSimExec);
         content.add (toolbar, BorderLayout.NORTH);
         my_light_viewer = new LightViewer (light_arrays);
-        content.add (my_light_viewer, BorderLayout.CENTER);     
-        
+        content.add (my_light_viewer, BorderLayout.CENTER);
+
         addWindowListener (new WindowAdapter() {
             public void windowClosing (WindowEvent e)
                 { System.exit(0); }
@@ -90,14 +90,17 @@ public class LightSimWindow extends JFrame implements ExecListener {
     }
 
     @Override
-    public void execStateChanged(boolean running, boolean paused) {
+    public void execStateChanged(boolean running, boolean paused, LightController controller) {
         String state = "run";
         if (!running) {
             state = paused ? "pause" : "reset";
         }
-        toolbar.setToolbarState(state);
+        if (null != toolbar) {
+            toolbar.setToolbarState(state);
+            toolbar.setSelectedController(controller);
+        }
     }
-    
+
     @Override
     public void newFrameReady() {
         repaint();

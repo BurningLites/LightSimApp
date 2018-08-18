@@ -27,7 +27,7 @@ public class LightSim
     {
     static LightSim     light_sim;
     static public Preferences   prefs;
-    
+
     private LightSimWindow  my_window;
     private LeanExec    exec;
     private LightArray      my_light_arrays;
@@ -63,7 +63,7 @@ public class LightSim
   //
     public void init() {
         my_light_arrays = new LightArray();
-        
+
         controllers = new ArrayList<>();
         controllers.add(new SimpleSnakesController());
         controllers.add(new SnakeController());
@@ -79,20 +79,18 @@ public class LightSim
         controllers.add(new StarBurstController());
         controllers.add(new SparklesController());
         controllers.add(new WaveController());
-        
+
+        exec = new LeanExec(my_light_arrays);
         if (enable_gui) {
-            exec = new LeanExec(my_light_arrays);
             my_window = new LightSimWindow(controllers, exec, my_light_arrays);
-            
-            
         } else {
             exec = new LeanExec(my_light_arrays);
             exec.setController(new WaveController());
-
-            Server server = new Server(exec);
-            server.start();
         }
-        
+        Server server = new Server(exec, controllers);
+        server.start();
+
+
         if (scheduled) {
             Console.log("running in scheduled mode");
             exec.setIsScheduled(true);

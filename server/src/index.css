@@ -1,0 +1,47 @@
+.container {
+  display: flex;
+  flex-flow: column nowrap;
+  align-content: center;
+}
+
+.title {
+  font-size: 20px;
+  font-family: "Helvetica";
+  margin: 10px;
+  text-align: center;
+}
+
+.status {
+  font-size: 16px;
+  font-family: "Helvetica";
+  margin: 10px;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.button-container {
+  display: flex;
+  flex-flow: row nowrap;
+  flex: 0 1 auto;
+  justify-content: center;
+}
+
+.play-buttons {
+  width: 40px;
+  height: 40px;
+}
+
+.program-select {
+  width: 100px;
+  margin: 10px;
+  align-self: center;
+}
+
+.scheduled-checkbox-label {
+  font-family: "Helvetica";
+  align-self: center;
+}
+
+.scheduled-checkbox {
+  margin: 5px;
+}
