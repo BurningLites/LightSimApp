@@ -10,6 +10,7 @@ Briefly, the setup involved:
 - Per Arduino: Output relay pins connected to 6x neck poofer solenoid valves, plus 1x mouth poofer solenoid (12V)
   - These are connected to digitalWrite OUPUT pins 0-6 to the relay board
 - 8-channel relay board to switch on power to the solenoids
+  - Relay takes separate 12V power supply to power the valves
   - https://www.amazon.com/gp/product/B07XM5GVWJ/
 
 The initial plan was to use the 4x remote control buttons to trigger different
@@ -30,10 +31,10 @@ On the other hand, we found that the WiFi connections were very reliable, even
 under dusty conditions, and there was minimal latency. So, in this v16 code, Ed
 does the following. We still use the RF signals to trigger effects, but one Arduino
 connects to the other's WiFi AP to listen for control characters to run effects instead of RF.
-- "left" Arduino publishes a WiFi access point Uno1, and runs an HTTP server on port 80
+- "left" Arduino publishes a WiFi access point Uno1, and runs an TCP server on port 80
 - "right" Arduino connects to Uno1 WiFi. (Note it's not possible to publish an AP and connect to a different AP simultaneously).
-- Only "right" uses loopRF() to listen for remote button presses. It sends single character data 'A'-'D' via HTTP to "left"
-- Only "left" uses receiveData() to react to HTTP inputs from "right"
+- Only "right" uses loopRF() to listen for remote button presses. It sends single character data 'A'-'D' via TCP to "left"
+- Only "left" uses receiveData() to react to TCP inputs from "right"
 
 This allowed pretty tight control over synchronized timing sequences between the two.
 
